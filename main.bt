@@ -1,0 +1,16 @@
+// Copyright (c) 2023-present Lukas Neubert.
+// This Source Code is subject to the terms of the Mozilla Public License 2.0.
+package main
+
+import os
+
+struct Token {}
+
+fun main(){
+	args := os.user_args()
+	text := os.read_file(args[0])
+	mut t := Tokenizer{
+		text = text
+	}
+	tokens := t.tokenize()
+}

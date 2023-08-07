@@ -1,0 +1,157 @@
+// Copyright (c) 2023-present Lukas Neubert.
+// This Source Code is subject to the terms of the Mozilla Public License 2.0.
+package main
+
+enum TokKind {
+	name
+	string
+	number
+	dot
+	colon
+	comma
+	lpar
+	rpar
+	lcur
+	rcur
+	lbr
+	rbr
+	assign
+	arrow
+	lt
+	gt
+	pipe
+	amp
+	question
+}
+
+struct Token {
+	kind TokKind
+	val string
+}
+
+struct Tokenizer {
+	text string
+mut:
+	pos i32
+	should_abort bool
+}
+
+fun new_token(kind TokKind, val string) Token {
+	return Token{
+		kind = kind
+		val = val
+	}
+}
+
+fun (mut t Tokenizer) tokenize() []Token {
+	mut tokens := []Token
+	for t.pos < t.text.length {
+		c := t.text[t.pos]
+		t.pos += 1
+
+		if is_name_char(c) {
+			start := t.pos
+			for t.pos < t.text.length and is_name_char(t.text[t.pos]) {
+				t.pos += 1
+			}
+			tokens.push(new_token(.name, t.text.substr(start, t.pos)))
+			continue
+		}
+
+		if is_digit(c) or c == `-` {
+			start := t.pos
+			for t.pos < t.text.length and is_digit(t.text[t.pos]) {
+				t.pos += 1
+			}
+			tokens.push(new_token(.number, t.text.substr(start, t.pos)))
+			continue
+		}
+
+		match c {
+			// String
+			`'` {
+				start := t.pos
+				for t.pos < t.text.length and t.text[t.pos] != `'` {
+					t.pos += 1
+				}
+				t.pos += 1
+				tokens.push(new_token(.string, t.text.substr(start, t.pos)))
+			}
+			`.` {
+				tokens.push(new_token(.dot, ''))
+			}
+			`:` {
+				tokens.push(new_token(.colon, ''))
+			}
+			`,` {
+				tokens.push(new_token(.comma, ''))
+			}
+			`(` {
+				tokens.push(new_token(.lpar, ''))
+			}
+			`)` {
+				tokens.push(new_token(.rpar, ''))
+			}
+			`{` {
+				tokens.push(new_token(.lcur, ''))
+			}
+			`}` {
+				tokens.push(new_token(.rcur, ''))
+			}
+			`[` {
+				tokens.push(new_token(.lbr, ''))
+			}
+			`]` {
+				tokens.push(new_token(.rbr, ''))
+			}
+			`=` {
+				if t.text[t.pos + 1] == `>` {
+					tokens.push(new_token(.arrow, ''))
+					t.pos += 1
+					continue
+				}
+				tokens.push(new_token(.assign, ''))
+			}
+			`<` {
+				tokens.push(new_token(.lt, ''))
+			}
+			`>` {
+				tokens.push(new_token(.gt, ''))
+			}
+			`|` {
+				tokens.push(new_token(.pipe, ''))
+			}
+			`&` {
+				tokens.push(new_token(.amp, ''))
+			}
+			`?` {
+				tokens.push(new_token(.question, ''))
+			}
+			// Skip whitespace and semicolon
+			`;`, ` `, `\n`, `\t` {}
+			// Skip comments
+			`/`, `*` {
+				t.skip_line()
+			}
+			else {
+				eprintln('unexpected char `${c.ascii()}`')
+				exit(1)
+			}
+		}
+	}
+	return tokens
+}
+
+fun (mut t Tokenizer) skip_line() {
+	for t.pos < t.text.length and t.text[t.pos] != `\n` {
+		t.pos += 1
+	}
+}
+
+fun is_name_char(c u8) bool {
+	return c >= `a` and c <= `z` or c >= `A` and c <= `Z` or c == `_`
+}
+
+fun is_digit(c u8) bool {
+	return c >= `0` and c <= `9`
+}
