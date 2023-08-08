@@ -1,0 +1,39 @@
+// Copyright (c) 2023-present Lukas Neubert.
+// This Source Code is subject to the terms of the Mozilla Public License 2.0.
+package main
+
+struct Parser {
+	tokens []Token
+mut:
+	tok Token
+	next_tok Token
+	pos i32
+}
+
+fun parse(tokens []Token) Package {
+	mut p := Parser{
+		tokens = tokens
+	}
+	p.next()
+	p.next()
+	return p.pkg_decl()
+}
+
+fun (mut p Parser) pkg_decl() Package {
+	p.check(.key_declare)
+	p.check(.key_module)
+	return Package{}
+}
+
+fun (mut p Parser) check(exp TokKind) {
+	if p.tok.kind != exp {
+		eprintln('unexpected token ${p.tok.kind}: ${p.tok.val}, expected ${exp}')
+	}
+	p.next()
+}
+
+fun (mut p Parser) next() {
+	p.tok = p.next_tok
+	p.next_tok = p.tokens[p.pos]
+	p.pos += 1
+}

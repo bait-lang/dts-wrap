@@ -3,6 +3,7 @@
 package main
 
 enum TokKind {
+	unknown
 	name
 	string
 	number
@@ -22,6 +23,16 @@ enum TokKind {
 	pipe
 	amp
 	question
+	key_declare
+	key_module
+}
+
+fun keyword_to_kind(name string) TokKind {
+	match name {
+		'declare' { return .key_declare }
+		'module' { return .key_module }
+		else { return .name }
+	}
 }
 
 struct Token {
@@ -43,18 +54,26 @@ fun new_token(kind TokKind, val string) Token {
 	}
 }
 
-fun (mut t Tokenizer) tokenize() []Token {
+fun tokenize(text string) []Token {
+	mut t := Tokenizer{
+		text = text
+	}
+
 	mut tokens := []Token
 	for t.pos < t.text.length {
 		c := t.text[t.pos]
 		t.pos += 1
 
 		if is_name_char(c) {
-			start := t.pos
+			start := t.pos - 1
 			for t.pos < t.text.length and is_name_char(t.text[t.pos]) {
 				t.pos += 1
 			}
-			tokens.push(new_token(.name, t.text.substr(start, t.pos)))
+
+			val := t.text.substr(start, t.pos)
+			kind := keyword_to_kind(val)
+
+			tokens.push(new_token(kind, val))
 			continue
 		}
 
