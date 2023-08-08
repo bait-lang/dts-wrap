@@ -23,14 +23,22 @@ enum TokKind {
 	pipe
 	amp
 	question
+	key_const
 	key_declare
+	key_export
+	key_interface
 	key_module
+	key_readonly
 }
 
 fun keyword_to_kind(name string) TokKind {
 	match name {
+		'const' { return .key_const }
 		'declare' { return .key_declare }
+		'export' { return .key_export }
+		'interface' { return .key_interface }
 		'module' { return .key_module }
+		'readonly' { return .key_readonly }
 		else { return .name }
 	}
 }

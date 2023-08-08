@@ -2,6 +2,24 @@
 // This Source Code is subject to the terms of the Mozilla Public License 2.0.
 package main
 
+type Decl := Const | Interface
+
 struct Package {
 	name string
+	decls []Decl
+}
+
+struct Const {
+	name string
+	typ string
+}
+
+struct Interface {
+	name string
+	fields []Field
+}
+
+struct Field {
+	name string
+	typ string
 }

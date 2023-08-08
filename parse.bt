@@ -22,14 +22,56 @@ fun parse(tokens []Token) Package {
 fun (mut p Parser) pkg_decl() Package {
 	p.check(.key_declare)
 	p.check(.key_module)
-	return Package{}
+	name := p.tok.val
+	p.check(.string)
+
+	mut decls := []Decl
+	p.check(.lcur)
+	for p.tok.kind != .rcur {
+		if p.tok.kind == .key_export {
+			p.next()
+		}
+		match p.tok.kind {
+			.key_const {
+				decls.push(p.const_decl())
+			}
+			else {
+				eprintln('unexpected token ${p.tok.kind}: ${p.tok.val}')
+				exit(1)
+			}
+		}
+	}
+	p.check(.rcur)
+
+	return Package{
+		name = name
+		decls = decls
+	}
+}
+
+fun (mut p Parser) const_decl() Const {
+	p.next()
+	name := p.check_name()
+	p.check(.colon)
+	typ := p.check_name()
+	return Const{
+		name = name
+		typ = typ
+	}
 }
 
 fun (mut p Parser) check(exp TokKind) {
 	if p.tok.kind != exp {
 		eprintln('unexpected token ${p.tok.kind}: ${p.tok.val}, expected ${exp}')
+		exit(1)
 	}
 	p.next()
+}
+
+fun (mut p Parser) check_name() string {
+	val := p.tok.val
+	p.check(.name)
+	return val
 }
 
 fun (mut p Parser) next() {
