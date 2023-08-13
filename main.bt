@@ -10,8 +10,9 @@ fun main(){
 	text := os.read_file(name)
 
 	tokens := tokenize(text)
-	ast := parse(tokens)
-	js := generate(ast)
+	mut table := new_table()
+	ast := parse(tokens, table)
+	js := generate(ast, table)
 
 	out_name := name.replace('.d.ts', '.bt')
 	if not os.exists('out'){

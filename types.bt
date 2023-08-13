@@ -1,0 +1,38 @@
+// Copyright (c) 2023-present Lukas Neubert.
+// This Source Code is subject to the terms of the Mozilla Public License 2.0.
+package main
+
+struct Table {
+	indexes map[string]i32
+	types []string
+}
+
+fun new_table() Table {
+	mut t := Table{}
+	t.register_builtins()
+	return t
+}
+
+fun (mut t Table) get_or_new_type(name string) i32 {
+	idx := t.indexes[name]
+	if idx >= 0 {
+		return idx
+	}
+
+	return t.add_type(name, name)
+}
+
+fun (mut t Table) add_type(name string, bait_name string) i32 {
+	new_idx := t.types.length
+	t.types.push(bait_name)
+	t.indexes[name] = new_idx
+	return new_idx
+}
+
+fun (mut t Table) register_builtins() {
+	t.add_type('string', 'String')
+}
+
+fun (t Table) type_str(typ i32) string {
+	return t.types[typ]
+}

@@ -5,14 +5,16 @@ package main
 struct Parser {
 	tokens []Token
 mut:
+	table Table
 	tok Token
 	next_tok Token
 	pos i32
 }
 
-fun parse(tokens []Token) Package {
+fun parse(tokens []Token, table Table) Package {
 	mut p := Parser{
 		tokens = tokens
+		table = table
 	}
 	p.next()
 	p.next()
@@ -53,11 +55,16 @@ fun (mut p Parser) const_decl() Const {
 	p.next()
 	name := p.check_name()
 	p.check(.colon)
-	typ := p.check_name()
+	typ := p.parse_type()
 	return Const{
 		name = name
 		typ = typ
 	}
+}
+
+fun (mut p Parser) parse_type() i32 {
+	name := p.check_name()
+	return p.table.get_or_new_type(name)
 }
 
 fun (mut p Parser) check(exp TokKind) {
