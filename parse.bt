@@ -88,6 +88,10 @@ fun (mut p Parser) interface_decl() Interface {
 }
 
 fun (mut p Parser) field() Field {
+	if p.tok.kind == .key_readonly {
+		p.next()
+	}
+
 	name := p.check_name()
 	p.check(.colon)
 	typ := p.parse_type()
