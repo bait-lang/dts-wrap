@@ -64,7 +64,7 @@ fun (mut p Parser) const_decl() Const {
 
 fun (mut p Parser) parse_type() i32 {
 	name := p.check_name()
-	return p.table.get_or_new_type(name)
+	return p.table.register_type(name)
 }
 
 fun (mut p Parser) check(exp TokKind) {
