@@ -1,3 +1,4 @@
 *.code-workspace
 *.js
 *.d.ts
+out/
