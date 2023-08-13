@@ -33,15 +33,7 @@ fun (mut p Parser) pkg_decl() Package {
 		if p.tok.kind == .key_export {
 			p.next()
 		}
-		match p.tok.kind {
-			.key_const {
-				decls.push(p.const_decl())
-			}
-			else {
-				eprintln('unexpected token ${p.tok.kind}: ${p.tok.val}')
-				exit(1)
-			}
-		}
+		decls.push(p.decl())
 	}
 	p.check(.rcur)
 
@@ -51,12 +43,55 @@ fun (mut p Parser) pkg_decl() Package {
 	}
 }
 
+fun (mut p Parser) decl() Decl {
+	match p.tok.kind {
+		.key_const {
+			return p.const_decl()
+		}
+		.key_interface {
+			return p.interface_decl()
+		}
+		else {
+			eprintln('unexpected token ${p.tok.kind}: ${p.tok.val}')
+			exit(1)
+		}
+	}
+}
+
 fun (mut p Parser) const_decl() Const {
 	p.next()
 	name := p.check_name()
 	p.check(.colon)
 	typ := p.parse_type()
 	return Const{
+		name = name
+		typ = typ
+	}
+}
+
+fun (mut p Parser) interface_decl() Interface {
+	p.next()
+	name := p.check_name()
+	p.table.register_type(name)
+
+	mut fields := []Field
+	p.check(.lcur)
+	for p.tok.kind != .rcur {
+		fields.push(p.field())
+	}
+	p.check(.rcur)
+
+	return Interface{
+		name = name
+		fields = fields
+	}
+}
+
+fun (mut p Parser) field() Field {
+	name := p.check_name()
+	p.check(.colon)
+	typ := p.parse_type()
+	return Field{
 		name = name
 		typ = typ
 	}
