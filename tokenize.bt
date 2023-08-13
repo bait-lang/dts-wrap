@@ -101,8 +101,8 @@ fun tokenize(text string) []Token {
 				for t.pos < t.text.length and t.text[t.pos] != `'` {
 					t.pos += 1
 				}
-				t.pos += 1
 				tokens.push(new_token(.string, t.text.substr(start, t.pos)))
+				t.pos += 1
 			}
 			`.` {
 				tokens.push(new_token(.dot, ''))

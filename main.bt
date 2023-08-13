@@ -6,8 +6,17 @@ import os
 
 fun main(){
 	args := os.user_args()
-	text := os.read_file(args[0])
+	name := args[0]
+	text := os.read_file(name)
 
 	tokens := tokenize(text)
-	ast := parse(tokens)
+	mut table := new_table()
+	ast := parse(tokens, table)
+	js := generate(ast, table)
+
+	out_name := name.replace('.d.ts', '.bt')
+	if not os.exists('out'){
+		os.mkdir('out')
+	}
+	os.write_file('out/${out_name}', js)
 }
