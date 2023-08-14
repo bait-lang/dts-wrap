@@ -93,6 +93,12 @@ fun (mut p Parser) field() Field {
 	}
 
 	name := p.check_name()
+
+	// TODO properly handle optional fields that can be undefined
+	if p.tok.kind == .question {
+		p.next()
+	}
+
 	p.check(.colon)
 	typ := p.parse_type()
 	return Field{
