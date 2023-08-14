@@ -14,7 +14,7 @@ fun main(){
 	ast := parse(tokens, table)
 	js := generate(ast, table)
 
-	out_name := name.replace('.d.ts', '.bt')
+	out_name := name.replace('.d.ts', '.js.bt')
 	if not os.exists('out'){
 		os.mkdir('out')
 	}
