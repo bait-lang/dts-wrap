@@ -31,6 +31,37 @@ enum TokKind {
 	key_readonly
 }
 
+fun (k TokKind) str()string{
+	match k {
+		.unknown { return 'unknown' }
+		.name { return 'name' }
+		.string { return 'string' }
+		.number { return 'number' }
+		.dot { return '.' }
+		.colon { return ':' }
+		.comma { return ',' }
+		.lpar { return '(' }
+		.rpar { return ')' }
+		.lcur { return '{' }
+		.rcur { return '}' }
+		.lbr { return '[' }
+		.rbr { return ']' }
+		.assign { return '=' }
+		.arrow { return '=>' }
+		.lt { return '<' }
+		.gt { return '>' }
+		.pipe { return '|' }
+		.amp { return '&' }
+		.question { return '?' }
+		.key_const { return 'const' }
+		.key_declare { return 'declare' }
+		.key_export { return 'export' }
+		.key_interface { return 'interface' }
+		.key_module { return 'module' }
+		.key_readonly { return 'readonly' }
+	}
+}
+
 fun keyword_to_kind(name string) TokKind {
 	match name {
 		'const' { return .key_const }
