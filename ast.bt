@@ -17,9 +17,16 @@ struct Const {
 struct Interface {
 	name string
 	fields []Field
+	methods []Method
 }
 
 struct Field {
 	name string
 	typ i32
+}
+
+struct Method {
+	name string
+	params []Field
+	ret_type i32
 }

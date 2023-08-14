@@ -56,8 +56,11 @@ fun (mut t Table) add_type(name string, bait_name string) i32 {
 	return new_idx
 }
 
+const VOID_IDX := 1
+
 fun (mut t Table) register_builtins() {
 	t.register_type('_unknown')
+	t.register_type('void')
 	t.add_type('any', '#JS.Any')
 	t.add_type('boolean', '#JS.Boolean')
 	t.add_type('number', '#JS.Number')
