@@ -37,9 +37,31 @@ fun (mut g Gen) const_decl(node Const) {
 fun (mut g Gen) interface_decl(node Interface) {
 	g.writeln('interface #JS.${node.name} {')
 	for field in node.fields {
-		g.writeln('\t${field.name} ${g.typ(field.typ)}')
+		g.write('\t')
+		g.field(field)
+		g.writeln('')
+	}
+	for method in node.methods {
+		g.write('\t${method.name}(')
+		for i, param in method.params {
+			g.field(param)
+			if i < method.params.length - 1 {
+				g.write(', ')
+			}
+		}
+		if method.ret_type == VOID_IDX {
+			g.writeln(')')
+		} else {
+			g.writeln(') ${g.typ(method.ret_type)}')
+		}
 	}
 	g.writeln('}')
+}
+
+fun (mut g Gen) field(field Field) {
+	g.write(field.name)
+	g.write(' ')
+	g.write(g.typ(field.typ))
 }
 
 fun (mut g Gen) typ(typ i32) string {
