@@ -46,19 +46,22 @@ fun keyword_to_kind(name string) TokKind {
 struct Token {
 	kind TokKind
 	val string
+	line i32
 }
 
 struct Tokenizer {
 	text string
 mut:
 	pos i32
+	line i32 := 1
 	should_abort bool
 }
 
-fun new_token(kind TokKind, val string) Token {
+fun (t Tokenizer) new_token(kind TokKind, val string) Token {
 	return Token{
 		kind = kind
 		val = val
+		line = t.line
 	}
 }
 
@@ -68,6 +71,13 @@ fun tokenize(text string) []Token {
 	}
 
 	mut tokens := []Token
+	for t.pos < t.text.length {
+		tokens.push(t.next_token())
+	}
+	return tokens
+}
+
+fun (mut t Tokenizer) next_token() Token {
 	for t.pos < t.text.length {
 		c := t.text[t.pos]
 		t.pos += 1
@@ -81,8 +91,7 @@ fun tokenize(text string) []Token {
 			val := t.text.substr(start, t.pos)
 			kind := keyword_to_kind(val)
 
-			tokens.push(new_token(kind, val))
-			continue
+			return t.new_token(kind, val)
 		}
 
 		if is_digit(c) or c == `-` {
@@ -90,8 +99,7 @@ fun tokenize(text string) []Token {
 			for t.pos < t.text.length and is_digit(t.text[t.pos]) {
 				t.pos += 1
 			}
-			tokens.push(new_token(.number, t.text.substr(start, t.pos)))
-			continue
+			return t.new_token(.number, t.text.substr(start, t.pos))
 		}
 
 		match c {
@@ -101,78 +109,80 @@ fun tokenize(text string) []Token {
 				for t.pos < t.text.length and t.text[t.pos] != `'` {
 					t.pos += 1
 				}
-				tokens.push(new_token(.string, t.text.substr(start, t.pos)))
 				t.pos += 1
+				return t.new_token(.string, t.text.substr(start, t.pos - 1))
 			}
 			`.` {
-				tokens.push(new_token(.dot, ''))
+				return t.new_token(.dot, '')
 			}
 			`:` {
-				tokens.push(new_token(.colon, ''))
+				return t.new_token(.colon, '')
 			}
 			`,` {
-				tokens.push(new_token(.comma, ''))
+				return t.new_token(.comma, '')
 			}
 			`(` {
-				tokens.push(new_token(.lpar, ''))
+				return t.new_token(.lpar, '')
 			}
 			`)` {
-				tokens.push(new_token(.rpar, ''))
+				return t.new_token(.rpar, '')
 			}
 			`{` {
-				tokens.push(new_token(.lcur, ''))
+				return t.new_token(.lcur, '')
 			}
 			`}` {
-				tokens.push(new_token(.rcur, ''))
+				return t.new_token(.rcur, '')
 			}
 			`[` {
-				tokens.push(new_token(.lbr, ''))
+				return t.new_token(.lbr, '')
 			}
 			`]` {
-				tokens.push(new_token(.rbr, ''))
+				return t.new_token(.rbr, '')
 			}
 			`=` {
 				if t.text[t.pos + 1] == `>` {
-					tokens.push(new_token(.arrow, ''))
 					t.pos += 1
-					continue
+					return t.new_token(.arrow, '')
 				}
-				tokens.push(new_token(.assign, ''))
+				return t.new_token(.assign, '')
 			}
 			`<` {
-				tokens.push(new_token(.lt, ''))
+				return t.new_token(.lt, '')
 			}
 			`>` {
-				tokens.push(new_token(.gt, ''))
+				return t.new_token(.gt, '')
 			}
 			`|` {
-				tokens.push(new_token(.pipe, ''))
+				return t.new_token(.pipe, '')
 			}
 			`&` {
-				tokens.push(new_token(.amp, ''))
+				return t.new_token(.amp, '')
 			}
 			`?` {
-				tokens.push(new_token(.question, ''))
+				return t.new_token(.question, '')
 			}
 			// Skip whitespace and semicolon
-			`;`, ` `, `\n`, `\t` {}
+			`;`, ` `, `\t` {}
+			`\n` {
+				t.line += 1
+			}
 			// Skip comments
 			`/`, `*` {
 				t.skip_line()
 			}
 			else {
-				eprintln('unexpected char `${c.ascii()}`')
+				eprintln('unexpected char `${c.ascii()}` in line ${t.line}')
 				exit(1)
 			}
 		}
 	}
-	return tokens
 }
 
 fun (mut t Tokenizer) skip_line() {
 	for t.pos < t.text.length and t.text[t.pos] != `\n` {
 		t.pos += 1
 	}
+	t.line += 1
 }
 
 fun is_name_char(c u8) bool {
