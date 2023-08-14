@@ -138,6 +138,14 @@ fun (mut p Parser) parse_type() i32 {
 		return p.table.register_array(name)
 	}
 
+	if p.tok.kind == .lt {
+		p.next()
+		gen_name := p.check_name()
+		p.check(.gt)
+		// TODO register (concrete) generic struct type
+		// TODO afterwards fix gen
+	}
+
 	// Normal types
 	return p.table.register_type(name)
 }
