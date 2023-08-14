@@ -112,6 +112,10 @@ fun (mut p Parser) field(name string) Field {
 fun (mut p Parser) method(name string) Method {
 	p.next()
 	mut params := []Field
+	for p.tok.kind != .rpar {
+		pname := p.check_name()
+		params.push(p.field(pname))
+	}
 	p.check(.rpar)
 	p.check(.colon)
 
