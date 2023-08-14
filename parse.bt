@@ -30,9 +30,7 @@ fun (mut p Parser) pkg_decl() Package {
 	mut decls := []Decl
 	p.check(.lcur)
 	for p.tok.kind != .rcur {
-		if p.tok.kind == .key_export {
-			p.next()
-		}
+		p.skip(.key_export)
 		decls.push(p.decl())
 	}
 	p.check(.rcur)
@@ -97,16 +95,12 @@ fun (mut p Parser) interface_decl() Interface {
 
 fun (mut p Parser) field(name string) Field {
 	// TODO properly handle optional fields that can be undefined
-	if p.tok.kind == .question {
-		p.next()
-	}
+	p.skip(.question)
 
 	p.check(.colon)
 
 	// Array types can be readonly
-	if p.tok.kind == .key_readonly {
-		p.next()
-	}
+	p.skip(.key_readonly)
 
 	typ := p.parse_type()
 	return Field{
