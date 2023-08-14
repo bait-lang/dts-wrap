@@ -22,12 +22,24 @@ fun (mut g Gen) decls(decls []Decl) {
 	for decl in decls {
 		if decl is Const {
 			g.const_decl(decl as Const)
+		} else if decl is Interface {
+			g.interface_decl(decl as Interface)
+		} else {
+			eprintln('unsupported decl: ${decl}')
 		}
 	}
 }
 
 fun (mut g Gen) const_decl(node Const) {
 	g.writeln('const #JS.${node.name} := ${g.typ(node.typ)}')
+}
+
+fun (mut g Gen) interface_decl(node Interface) {
+	g.writeln('interface #JS.${node.name} {')
+	for field in node.fields {
+		g.writeln('\t${field.name} ${g.typ(field.typ)}')
+	}
+	g.writeln('}')
 }
 
 fun (mut g Gen) typ(typ i32) string {
