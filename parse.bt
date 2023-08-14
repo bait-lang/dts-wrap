@@ -108,7 +108,7 @@ fun (mut p Parser) parse_type() i32 {
 
 fun (mut p Parser) check(exp TokKind) {
 	if p.tok.kind != exp {
-		eprintln('unexpected token ${p.tok.kind}: ${p.tok.val}, expected ${exp}')
+		eprintln('line ${p.tok.line}: unexpected `${p.tok.kind}`, expecting `${exp}`')
 		exit(1)
 	}
 	p.next()
