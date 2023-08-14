@@ -75,25 +75,27 @@ fun (mut p Parser) interface_decl() Interface {
 	p.table.register_type(name)
 
 	mut fields := []Field
+	mut methods := []Method
 	p.check(.lcur)
 	for p.tok.kind != .rcur {
-		fields.push(p.field())
+		p.skip(.key_readonly)
+		fname := p.check_name()
+		if p.tok.kind == .lpar {
+			methods.push(p.method(fname))
+		} else {
+			fields.push(p.field(fname))
+		}
 	}
 	p.check(.rcur)
 
 	return Interface{
 		name = name
 		fields = fields
+		methods = methods
 	}
 }
 
-fun (mut p Parser) field() Field {
-	if p.tok.kind == .key_readonly {
-		p.next()
-	}
-
-	name := p.check_name()
-
+fun (mut p Parser) field(name string) Field {
 	// TODO properly handle optional fields that can be undefined
 	if p.tok.kind == .question {
 		p.next()
@@ -113,6 +115,11 @@ fun (mut p Parser) field() Field {
 	}
 }
 
+fun (mut p Parser) method(name string) Method {
+	// TODO
+	return Method{}
+}
+
 fun (mut p Parser) parse_type() i32 {
 	name := p.check_name()
 
@@ -125,6 +132,12 @@ fun (mut p Parser) parse_type() i32 {
 
 	// Normal types
 	return p.table.register_type(name)
+}
+
+fun (mut p Parser) skip(kind TokKind) {
+	if p.tok.kind == kind {
+		p.next()
+	}
 }
 
 fun (mut p Parser) check(exp TokKind) {
