@@ -213,6 +213,7 @@ fun (mut t Tokenizer) skip_line() {
 	for t.pos < t.text.length and t.text[t.pos] != `\n` {
 		t.pos += 1
 	}
+	t.pos += 1
 	t.line += 1
 }
 
