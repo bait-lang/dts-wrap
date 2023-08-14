@@ -109,6 +109,15 @@ fun (mut p Parser) field() Field {
 
 fun (mut p Parser) parse_type() i32 {
 	name := p.check_name()
+
+	// Arrays
+	if p.tok.kind == .lbr {
+		p.next()
+		p.check(.rbr)
+		return p.table.register_array(name)
+	}
+
+	// Normal types
 	return p.table.register_type(name)
 }
 
