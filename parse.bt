@@ -110,8 +110,18 @@ fun (mut p Parser) field(name string) Field {
 }
 
 fun (mut p Parser) method(name string) Method {
-	// TODO
-	return Method{}
+	p.next()
+	mut params := []Field
+	p.check(.rpar)
+	p.check(.colon)
+
+	ret_type := p.parse_type()
+
+	return Method{
+		name = name
+		params = params
+		ret_type = ret_type
+	}
 }
 
 fun (mut p Parser) parse_type() i32 {
