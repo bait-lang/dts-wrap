@@ -115,6 +115,9 @@ fun (mut p Parser) method(name string) Method {
 	for p.tok.kind != .rpar {
 		pname := p.check_name()
 		params.push(p.field(pname))
+		if p.tok.kind != .rpar {
+			p.check(.comma)
+		}
 	}
 	p.check(.rpar)
 	p.check(.colon)
