@@ -4,6 +4,7 @@ package main
 
 struct TypeSym {
 	name string
+	is_generic bool
 	is_array bool
 	elem_idx i32
 }
@@ -26,7 +27,23 @@ fun (mut t Table) register_type(name string) i32 {
 		return idx
 	}
 
-	return t.add_type(name, '#JS.${name}')
+	return t.add_simple_type(name, '#JS.${name}')
+}
+
+fun (mut t Table) register_generic(name string, gen_name string) i32 {
+	nidx := t.register_type(name)
+	gidx := t.register_type(gen_name)
+
+	idx := t.indexes['${name}<${gen_name}>']
+	if idx > 0 {
+		return idx
+	}
+
+	return t.push_type('${name}<${gen_name}>', TypeSym{
+		name = name
+		is_generic = true
+		elem_idx = nidx
+	})
 }
 
 fun (mut t Table) register_array(name string) i32 {
@@ -38,39 +55,48 @@ fun (mut t Table) register_array(name string) i32 {
 
 	elem_idx := t.register_type(name)
 
-	new_idx := t.types.length
-	t.types.push(TypeSym{
+	return t.push_type('${name}[]', TypeSym{
 		is_array = true
 		elem_idx = elem_idx
 	})
-	t.indexes['${name}[]'] = new_idx
-	return new_idx
 }
 
-fun (mut t Table) add_type(name string, bait_name string) i32 {
-	new_idx := t.types.length
-	t.types.push(TypeSym{
+fun (mut t Table) add_simple_type(name string, bait_name string) i32 {
+	return t.push_type(name, TypeSym{
 		name = bait_name
 	})
+}
+
+fun (mut t Table) push_type(name string, sym TypeSym) i32 {
+	new_idx := t.types.length
+	t.types.push(sym)
 	t.indexes[name] = new_idx
 	return new_idx
 }
 
 const VOID_IDX := 1
+const ANY_IDX := 2
 
 fun (mut t Table) register_builtins() {
 	t.register_type('_unknown')
 	t.register_type('void')
-	t.add_type('any', '#JS.Any')
-	t.add_type('boolean', '#JS.Boolean')
-	t.add_type('number', '#JS.Number')
-	t.add_type('string', '#JS.String')
+	t.add_simple_type('any', '#JS.Any')
+	t.add_simple_type('boolean', '#JS.Boolean')
+	t.add_simple_type('number', '#JS.Number')
+	t.add_simple_type('string', '#JS.String')
 }
 
 fun (t Table) type_str(idx i32) string {
 	typ := t.types[idx]
+
+	// TODO proper generics
+	if typ.is_generic {
+		return t.type_str(ANY_IDX)
+	}
+
 	if typ.is_array {
 		return '[]' + t.type_str(typ.elem_idx)
 	}
+
 	return typ.name
 }
