@@ -18,6 +18,8 @@ struct Interface {
 	name string
 	fields []Field
 	methods []Method
+mut:
+	is_class bool
 }
 
 struct Field {

@@ -43,6 +43,9 @@ fun (mut p Parser) pkg_decl() Package {
 
 fun (mut p Parser) decl() Decl {
 	match p.tok.kind {
+		.key_class {
+			return p.class_decl()
+		}
 		.key_const {
 			return p.const_decl()
 		}
@@ -54,6 +57,12 @@ fun (mut p Parser) decl() Decl {
 			exit(1)
 		}
 	}
+}
+
+fun (mut p Parser) class_decl() Interface {
+	mut decl := p.interface_decl()
+	decl.is_class = true
+	return decl
 }
 
 fun (mut p Parser) const_decl() Const {
