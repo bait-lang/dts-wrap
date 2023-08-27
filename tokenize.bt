@@ -23,6 +23,7 @@ enum TokKind {
 	pipe
 	amp
 	question
+	key_class
 	key_const
 	key_declare
 	key_export
@@ -53,6 +54,7 @@ fun (k TokKind) str()string{
 		.pipe { return '|' }
 		.amp { return '&' }
 		.question { return '?' }
+		.key_class { return 'class' }
 		.key_const { return 'const' }
 		.key_declare { return 'declare' }
 		.key_export { return 'export' }
@@ -64,6 +66,7 @@ fun (k TokKind) str()string{
 
 fun keyword_to_kind(name string) TokKind {
 	match name {
+		'class' { return .key_class }
 		'const' { return .key_const }
 		'declare' { return .key_declare }
 		'export' { return .key_export }
