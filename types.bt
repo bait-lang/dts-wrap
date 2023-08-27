@@ -9,6 +9,8 @@ struct TypeSym {
 	elem_idx i32
 	is_union bool
 	variants []i32
+	is_object bool
+	variant_names []string
 }
 
 struct Table {
@@ -64,7 +66,7 @@ fun (mut t Table) register_array(name string) i32 {
 }
 
 fun (mut t Table) register_union(variants []i32) i32 {
-	mut name := 'Union_'
+	mut name := 'Union'
 	for v in variants {
 		name += '_' + t.types[v].name
 	}
@@ -77,6 +79,28 @@ fun (mut t Table) register_union(variants []i32) i32 {
 	return t.push_type(name, TypeSym{
 		is_union = true
 		variants = variants
+	})
+}
+
+fun (mut t Table) register_object(fields []Field) i32 {
+	mut name := 'Object'
+	mut variants := []i32
+	mut variant_names := []string
+	for f in fields {
+		name += '_' + t.types[f].name
+		variants.push(f.typ)
+		variant_names.push(f.name)
+	}
+
+	idx := t.indexes[name]
+	if idx > 0 {
+		return idx
+	}
+
+	return t.push_type(name, TypeSym{
+		is_object = true
+		variants = variants
+		variant_names = variant_names
 	})
 }
 
@@ -119,6 +143,11 @@ fun (t Table) type_str(idx i32) string {
 
 	// TODO proper unions
 	if typ.is_union {
+		return t.type_str(ANY_IDX)
+	}
+
+	// TODO proper objects
+	if typ.is_object {
 		return t.type_str(ANY_IDX)
 	}
 
