@@ -87,6 +87,15 @@ fun (mut p Parser) interface_decl() Interface {
 	for p.tok.kind != .rcur {
 		p.skip(.key_readonly)
 		fname := p.check_name()
+
+		// TODO how to hanlde constructors?
+		if fname == 'constructor' {
+			p.check(.lpar)
+			params := p.params()
+			p.check(.rpar)
+			continue
+		}
+
 		if p.tok.kind == .lpar {
 			methods.push(p.method(fname))
 		} else {
@@ -120,14 +129,7 @@ fun (mut p Parser) field(name string) Field {
 
 fun (mut p Parser) method(name string) Method {
 	p.next()
-	mut params := []Field
-	for p.tok.kind != .rpar {
-		pname := p.check_name()
-		params.push(p.field(pname))
-		if p.tok.kind != .rpar {
-			p.check(.comma)
-		}
-	}
+	params := p.params()
 	p.check(.rpar)
 	p.check(.colon)
 
@@ -138,6 +140,18 @@ fun (mut p Parser) method(name string) Method {
 		params = params
 		ret_type = ret_type
 	}
+}
+
+fun (mut p Parser) params() []Field {
+	mut params := []Field
+	for p.tok.kind != .rpar {
+		pname := p.check_name()
+		params.push(p.field(pname))
+		if p.tok.kind != .rpar {
+			p.check(.comma)
+		}
+	}
+	return params
 }
 
 fun (mut p Parser) parse_type() i32 {
