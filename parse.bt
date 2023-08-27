@@ -132,6 +132,21 @@ fun (mut p Parser) method(name string) Method {
 }
 
 fun (mut p Parser) parse_type() i32 {
+	typ := p.parse_single_type()
+	if p.tok.kind != .pipe {
+		return typ
+	}
+
+	mut variants := [typ]
+	for p.tok.kind == .pipe {
+		p.next()
+		variants.push(p.parse_single_type())
+	}
+
+	return p.table.register_union(variants)
+}
+
+fun (mut p Parser) parse_single_type() i32 {
 	name := p.check_name()
 
 	// Arrays
@@ -141,6 +156,7 @@ fun (mut p Parser) parse_type() i32 {
 		return p.table.register_array(name)
 	}
 
+	// Generics
 	if p.tok.kind == .lt {
 		p.next()
 		gen_name := p.check_name()

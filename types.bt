@@ -7,6 +7,8 @@ struct TypeSym {
 	is_generic bool
 	is_array bool
 	elem_idx i32
+	is_union bool
+	variants []i32
 }
 
 struct Table {
@@ -61,6 +63,23 @@ fun (mut t Table) register_array(name string) i32 {
 	})
 }
 
+fun (mut t Table) register_union(variants []i32) i32 {
+	mut name := 'Union_'
+	for v in variants {
+		name += '_' + t.types[v].name
+	}
+
+	idx := t.indexes[name]
+	if idx > 0 {
+		return idx
+	}
+
+	return t.push_type(name, TypeSym{
+		is_union = true
+		variants = variants
+	})
+}
+
 fun (mut t Table) add_simple_type(name string, bait_name string) i32 {
 	return t.push_type(name, TypeSym{
 		name = bait_name
@@ -96,6 +115,11 @@ fun (t Table) type_str(idx i32) string {
 
 	if typ.is_array {
 		return '[]' + t.type_str(typ.elem_idx)
+	}
+
+	// TODO proper unions
+	if typ.is_union {
+		return t.type_str(ANY_IDX)
 	}
 
 	return typ.name
