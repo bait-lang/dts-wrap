@@ -35,7 +35,12 @@ fun (mut g Gen) const_decl(node Const) {
 }
 
 fun (mut g Gen) interface_decl(node Interface) {
-	g.writeln('interface #JS.${node.name} {')
+	if node.is_class {
+		g.writeln('struct #JS.${node.name} {')
+	} else {
+		g.writeln('interface #JS.${node.name} {')
+	}
+
 	for field in node.fields {
 		g.write('\t')
 		g.field(field)
