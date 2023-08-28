@@ -46,7 +46,39 @@ fun (mut g Gen) interface_decl(node Interface) {
 		g.field(field)
 		g.writeln('')
 	}
-	for method in node.methods {
+
+	if not node.is_class {
+		g.interface_methods(node.methods)
+	}
+
+	g.writeln('}')
+
+	if node.is_class {
+		for method in node.methods {
+			g.write('fun (this #JS.${node.name}) ${method.name}(')
+			for i, param in method.params {
+				g.field(param)
+				if i < method.params.length - 1 {
+					g.write(', ')
+				}
+			}
+			if method.ret_type == VOID_IDX {
+				g.writeln(')')
+			} else {
+				g.writeln(') ${g.typ(method.ret_type)}')
+			}
+		}
+	}
+}
+
+fun (mut g Gen) field(field Field) {
+	g.write(field.name)
+	g.write(' ')
+	g.write(g.typ(field.typ))
+}
+
+fun (mut g Gen) interface_methods(methods []Method) {
+	for method in methods {
 		g.write('\t${method.name}(')
 		for i, param in method.params {
 			g.field(param)
@@ -60,13 +92,6 @@ fun (mut g Gen) interface_decl(node Interface) {
 			g.writeln(') ${g.typ(method.ret_type)}')
 		}
 	}
-	g.writeln('}')
-}
-
-fun (mut g Gen) field(field Field) {
-	g.write(field.name)
-	g.write(' ')
-	g.write(g.typ(field.typ))
 }
 
 fun (mut g Gen) typ(typ i32) string {
