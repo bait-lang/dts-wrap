@@ -59,7 +59,7 @@ fun (mut p Parser) decl() Decl {
 	}
 }
 
-fun (mut p Parser) class_decl() Interface {
+fun (mut p Parser) class_decl() Class {
 	p.next()
 	name := p.check_name()
 	p.table.register_type(name)

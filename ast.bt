@@ -10,7 +10,7 @@ struct Package {
 }
 
 struct Class {
-	name
+	name string
 	fields []Field
 	methods []Method
 }
