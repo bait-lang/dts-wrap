@@ -2,11 +2,17 @@
 // This Source Code is subject to the terms of the Mozilla Public License 2.0.
 package main
 
-type Decl := Const | Interface
+type Decl := Class | Const | Interface
 
 struct Package {
 	name string
 	decls []Decl
+}
+
+struct Class {
+	name
+	fields []Field
+	methods []Method
 }
 
 struct Const {
@@ -18,8 +24,6 @@ struct Interface {
 	name string
 	fields []Field
 	methods []Method
-mut:
-	is_class bool
 }
 
 struct Field {

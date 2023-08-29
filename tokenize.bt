@@ -27,6 +27,7 @@ enum TokKind {
 	key_const
 	key_declare
 	key_export
+	key_extends
 	key_interface
 	key_module
 	key_readonly
@@ -58,6 +59,7 @@ fun (k TokKind) str()string{
 		.key_const { return 'const' }
 		.key_declare { return 'declare' }
 		.key_export { return 'export' }
+		.key_extends { return 'extends' }
 		.key_interface { return 'interface' }
 		.key_module { return 'module' }
 		.key_readonly { return 'readonly' }
@@ -70,6 +72,7 @@ fun keyword_to_kind(name string) TokKind {
 		'const' { return .key_const }
 		'declare' { return .key_declare }
 		'export' { return .key_export }
+		'extends' { return .key_extends }
 		'interface' { return .key_interface }
 		'module' { return .key_module }
 		'readonly' { return .key_readonly }

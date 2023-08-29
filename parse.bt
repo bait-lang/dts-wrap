@@ -60,9 +60,38 @@ fun (mut p Parser) decl() Decl {
 }
 
 fun (mut p Parser) class_decl() Interface {
-	mut decl := p.interface_decl()
-	decl.is_class = true
-	return decl
+	p.next()
+	name := p.check_name()
+	p.table.register_type(name)
+
+	mut fields := []Field
+	mut methods := []Method
+	p.check(.lcur)
+	for p.tok.kind != .rcur {
+		p.skip(.key_readonly)
+		fname := p.check_name()
+
+		// TODO how to hanlde constructors?
+		if fname == 'constructor' {
+			p.check(.lpar)
+			params := p.params()
+			p.check(.rpar)
+			continue
+		}
+
+		if p.tok.kind == .lpar {
+			methods.push(p.method(fname))
+		} else {
+			fields.push(p.field(fname))
+		}
+	}
+	p.check(.rcur)
+
+	return Class{
+		name = name
+		fields = fields
+		methods = methods
+	}
 }
 
 fun (mut p Parser) const_decl() Const {
@@ -87,15 +116,6 @@ fun (mut p Parser) interface_decl() Interface {
 	for p.tok.kind != .rcur {
 		p.skip(.key_readonly)
 		fname := p.check_name()
-
-		// TODO how to hanlde constructors?
-		if fname == 'constructor' {
-			p.check(.lpar)
-			params := p.params()
-			p.check(.rpar)
-			continue
-		}
-
 		if p.tok.kind == .lpar {
 			methods.push(p.method(fname))
 		} else {
