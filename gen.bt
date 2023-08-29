@@ -20,7 +20,9 @@ fun generate(ast Package, table Table) string {
 
 fun (mut g Gen) decls(decls []Decl) {
 	for decl in decls {
-		if decl is Const {
+		if decl is Class {
+			g.class_decl(decl as Class)
+		} else if decl is Const {
 			g.const_decl(decl as Const)
 		} else if decl is Interface {
 			g.interface_decl(decl as Interface)
@@ -30,16 +32,29 @@ fun (mut g Gen) decls(decls []Decl) {
 	}
 }
 
+fun (mut g Gen) class_decl(node Class) {
+	// TODO gen "extends Foo" once supported in Bait
+	g.writeln('struct #JS.${node.name} {')
+	for field in node.fields {
+		g.write('\t')
+		g.field(field)
+		g.writeln('')
+	}
+	g.writeln('}')
+
+	for method in node.methods {
+		g.write('fun (this #JS.${node.name}) ${method.name}(')
+		g.params(method.params)
+		g.ret_type(method.ret_type)
+	}
+}
+
 fun (mut g Gen) const_decl(node Const) {
 	g.writeln('const #JS.${node.name} := ${g.typ(node.typ)}')
 }
 
 fun (mut g Gen) interface_decl(node Interface) {
-	if node.is_class {
-		g.writeln('struct #JS.${node.name} {')
-	} else {
-		g.writeln('interface #JS.${node.name} {')
-	}
+	g.writeln('interface #JS.${node.name} {')
 
 	for field in node.fields {
 		g.write('\t')
@@ -47,28 +62,13 @@ fun (mut g Gen) interface_decl(node Interface) {
 		g.writeln('')
 	}
 
-	if not node.is_class {
-		g.interface_methods(node.methods)
+	for method in node.methods {
+		g.write('\t${method.name}(')
+		g.params(method.params)
+		g.ret_type(method.ret_type)
 	}
 
 	g.writeln('}')
-
-	if node.is_class {
-		for method in node.methods {
-			g.write('fun (this #JS.${node.name}) ${method.name}(')
-			for i, param in method.params {
-				g.field(param)
-				if i < method.params.length - 1 {
-					g.write(', ')
-				}
-			}
-			if method.ret_type == VOID_IDX {
-				g.writeln(')')
-			} else {
-				g.writeln(') ${g.typ(method.ret_type)}')
-			}
-		}
-	}
 }
 
 fun (mut g Gen) field(field Field) {
@@ -77,20 +77,20 @@ fun (mut g Gen) field(field Field) {
 	g.write(g.typ(field.typ))
 }
 
-fun (mut g Gen) interface_methods(methods []Method) {
-	for method in methods {
-		g.write('\t${method.name}(')
-		for i, param in method.params {
-			g.field(param)
-			if i < method.params.length - 1 {
-				g.write(', ')
-			}
+fun (mut g Gen) params(params []Field) {
+	for i, param in params {
+		g.field(param)
+		if i < params.length - 1 {
+			g.write(', ')
 		}
-		if method.ret_type == VOID_IDX {
-			g.writeln(')')
-		} else {
-			g.writeln(') ${g.typ(method.ret_type)}')
-		}
+	}
+}
+
+fun (mut g Gen) ret_type(typ i32) {
+	if typ == VOID_IDX {
+		g.writeln(')')
+	} else {
+		g.writeln(') ${g.typ(typ)}')
 	}
 }
 
