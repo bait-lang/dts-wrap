@@ -2,7 +2,7 @@
 // This Source Code is subject to the terms of the Mozilla Public License 2.0.
 package main
 
-type Decl := Class | Const | Interface
+type Decl := Class | Const | Enum | Interface
 
 struct Package {
 	name string
@@ -19,6 +19,10 @@ struct Class {
 struct Const {
 	name string
 	typ i32
+}
+
+struct Enum{
+	name string
 }
 
 struct Interface {
