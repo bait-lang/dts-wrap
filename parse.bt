@@ -49,6 +49,9 @@ fun (mut p Parser) decl() Decl {
 		.key_const {
 			return p.const_decl()
 		}
+		.key_enum {
+			return p.enum_decl()
+		}
 		.key_interface {
 			return p.interface_decl()
 		}
@@ -110,6 +113,29 @@ fun (mut p Parser) const_decl() Const {
 	return Const{
 		name = name
 		typ = typ
+	}
+}
+
+fun (mut p Parser) enum_decl() Enum {
+	p.next()
+	name := p.check_name()
+	p.table.register_type(name)
+
+	p.check(.lcur)
+	for p.tok.kind != .rcur {
+		p.check_name()
+		if p.tok.kind == .assign {
+			p.next()
+			p.check(.number)
+		}
+		if p.tok.kind != .rcur {
+			p.check(.comma)
+		}
+	}
+	p.next()
+
+	return Enum{
+		name = name
 	}
 }
 
