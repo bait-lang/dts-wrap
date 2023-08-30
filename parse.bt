@@ -191,9 +191,6 @@ fun (mut p Parser) field(name string) Field {
 
 	p.check(.colon)
 
-	// Array types can be readonly
-	p.skip(.key_readonly)
-
 	typ := p.parse_type()
 	return Field{
 		name = name
@@ -252,13 +249,18 @@ fun (mut p Parser) parse_type() i32 {
 }
 
 fun (mut p Parser) parse_single_type() i32 {
+	// Readonly arrays
+	if p.tok.kind == .key_readonly {
+		p.next()
+		return p.parse_array_type(p.check_name())
+
+	}
+
 	name := p.check_name()
 
 	// Arrays
 	if p.tok.kind == .lbr {
-		p.next()
-		p.check(.rbr)
-		return p.table.register_array(name)
+		return p.parse_array_type(name)
 	}
 
 	// Generics
@@ -271,6 +273,12 @@ fun (mut p Parser) parse_single_type() i32 {
 
 	// Normal types
 	return p.table.register_type(name)
+}
+
+fun (mut p Parser) parse_array_type(name string) i32 {
+	p.check(.lbr)
+	p.check(.rbr)
+	return p.table.register_array(name)
 }
 
 fun (mut p Parser) parse_object_type() i32 {
