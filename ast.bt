@@ -29,6 +29,7 @@ struct Interface {
 	name string
 	fields []Field
 	methods []Method
+	ext_type i32
 }
 
 struct Field {

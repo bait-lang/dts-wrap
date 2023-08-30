@@ -60,6 +60,7 @@ fun (mut g Gen) enum_decl(node Enum) {
 }
 
 fun (mut g Gen) interface_decl(node Interface) {
+	// TODO gen "extends Foo" once supported in Bait
 	g.writeln('interface #JS.${node.name} {')
 
 	for field in node.fields {
