@@ -24,6 +24,8 @@ fun (mut g Gen) decls(decls []Decl) {
 			g.class_decl(decl as Class)
 		} else if decl is Const {
 			g.const_decl(decl as Const)
+		} else if decl is Enum {
+			g.enum_decl(decl as Enum)
 		} else if decl is Interface {
 			g.interface_decl(decl as Interface)
 		} else {
@@ -51,6 +53,10 @@ fun (mut g Gen) class_decl(node Class) {
 
 fun (mut g Gen) const_decl(node Const) {
 	g.writeln('const #JS.${node.name} := ${g.typ(node.typ)}')
+}
+
+fun (mut g Gen) enum_decl(node Enum) {
+	g.writeln('enum #JS.${node.name} {}')
 }
 
 fun (mut g Gen) interface_decl(node Interface) {
