@@ -277,6 +277,7 @@ fun (mut p Parser) parse_object_type() i32 {
 	p.check(.lcur)
 	mut fields := []Field
 	for p.tok.kind != .rcur {
+		p.skip(.key_readonly)
 		fname := p.check_name()
 		fields.push(p.field(fname))
 	}
