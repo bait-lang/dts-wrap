@@ -260,9 +260,9 @@ fun (mut p Parser) parse_single_type() i32 {
 	// Generics
 	if p.tok.kind == .lt {
 		p.next()
-		gen_name := p.check_name()
+		gidx := p.parse_type()
 		p.check(.gt)
-		return p.table.register_generic(name, gen_name)
+		return p.table.register_generic(name, gidx)
 	}
 
 	// Normal types

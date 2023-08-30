@@ -34,16 +34,17 @@ fun (mut t Table) register_type(name string) i32 {
 	return t.add_simple_type(name, '#JS.${name}')
 }
 
-fun (mut t Table) register_generic(name string, gen_name string) i32 {
+fun (mut t Table) register_generic(name string, gidx i32) i32 {
 	nidx := t.register_type(name)
-	gidx := t.register_type(gen_name)
+	gen_type := t.types[gidx]
+	full_name := '${name}<${gen_type.name}>'
 
-	idx := t.indexes['${name}<${gen_name}>']
+	idx := t.indexes[full_name]
 	if idx > 0 {
 		return idx
 	}
 
-	return t.push_type('${name}<${gen_name}>', TypeSym{
+	return t.push_type(full_name, TypeSym{
 		name = name
 		is_generic = true
 		elem_idx = nidx
