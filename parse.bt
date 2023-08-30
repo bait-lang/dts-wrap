@@ -233,6 +233,10 @@ fun (mut p Parser) parse_type() i32 {
 		return p.parse_object_type()
 	}
 
+	if p.tok.kind == .lpar {
+		return p.parse_fun_type()
+	}
+
 	typ := p.parse_single_type()
 	if p.tok.kind != .pipe {
 		return typ
@@ -278,6 +282,16 @@ fun (mut p Parser) parse_object_type() i32 {
 	}
 	p.check(.rcur)
 	return p.table.register_object(fields)
+}
+
+fun (mut p Parser) parse_fun_type() i32 {
+	p.check(.lpar)
+	params := p.params()
+	p.check(.rpar)
+	p.check(.arrow)
+	ret_type := p.parse_type()
+
+	return p.table.register_fun(params, ret_type)
 }
 
 fun (mut p Parser) skip(kind TokKind) {

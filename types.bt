@@ -11,6 +11,9 @@ struct TypeSym {
 	variants []i32
 	is_object bool
 	variant_names []string
+	is_function bool
+	params []Field
+	ret_idx i32
 }
 
 struct Table {
@@ -105,6 +108,26 @@ fun (mut t Table) register_object(fields []Field) i32 {
 	})
 }
 
+fun (mut t Table) register_fun(params []Field, ret_idx i32) i32 {
+	mut name := 'Function'
+	for p in params {
+		name += '_' + t.types[p.typ].name
+	}
+	name += '__' + t.types[ret_idx].name
+
+	idx := t.indexes[name]
+	if idx > 0 {
+		return idx
+	}
+
+	return t.push_type(name, TypeSym{
+		is_function = true
+		params = params
+		ret_idx = ret_idx
+	})
+}
+
+
 fun (mut t Table) add_simple_type(name string, bait_name string) i32 {
 	return t.push_type(name, TypeSym{
 		name = bait_name
@@ -149,6 +172,11 @@ fun (t Table) type_str(idx i32) string {
 
 	// TODO proper objects
 	if typ.is_object {
+		return t.type_str(ANY_IDX)
+	}
+
+	// TODO proper functions
+	if typ.is_function {
 		return t.type_str(ANY_IDX)
 	}
 
