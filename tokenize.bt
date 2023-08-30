@@ -33,6 +33,7 @@ enum TokKind {
 	key_extends
 	key_interface
 	key_module
+	key_private
 	key_readonly
 	key_static
 }
@@ -69,6 +70,7 @@ fun (k TokKind) str()string{
 		.key_extends { return 'extends' }
 		.key_interface { return 'interface' }
 		.key_module { return 'module' }
+		.key_private { return 'private' }
 		.key_readonly { return 'readonly' }
 		.key_static { return 'static' }
 	}
@@ -85,6 +87,7 @@ fun keyword_to_kind(name string) TokKind {
 		'extends' { return .key_extends }
 		'interface' { return .key_interface }
 		'module' { return .key_module }
+		'private' { return .key_private }
 		'readonly' { return .key_readonly }
 		'static' { return .key_static }
 		else { return .name }

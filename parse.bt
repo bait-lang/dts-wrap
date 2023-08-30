@@ -79,6 +79,7 @@ fun (mut p Parser) class_decl() Class {
 	mut methods := []Method
 	p.check(.lcur)
 	for p.tok.kind != .rcur {
+		p.skip(.key_private)
 		p.skip(.key_readonly)
 
 		// TODO how to hanlde constructors in Bait?
