@@ -25,6 +25,7 @@ enum TokKind {
 	question
 	key_class
 	key_const
+	key_constructor
 	key_declare
 	key_enum
 	key_export
@@ -32,6 +33,7 @@ enum TokKind {
 	key_interface
 	key_module
 	key_readonly
+	key_static
 }
 
 fun (k TokKind) str()string{
@@ -58,6 +60,7 @@ fun (k TokKind) str()string{
 		.question { return '?' }
 		.key_class { return 'class' }
 		.key_const { return 'const' }
+		.key_constructor { return 'constructor' }
 		.key_declare { return 'declare' }
 		.key_enum { return 'enum' }
 		.key_export { return 'export' }
@@ -65,6 +68,7 @@ fun (k TokKind) str()string{
 		.key_interface { return 'interface' }
 		.key_module { return 'module' }
 		.key_readonly { return 'readonly' }
+		.key_static { return 'static' }
 	}
 }
 
@@ -72,6 +76,7 @@ fun keyword_to_kind(name string) TokKind {
 	match name {
 		'class' { return .key_class }
 		'const' { return .key_const }
+		'constructor' { return .key_constructor }
 		'declare' { return .key_declare }
 		'enum' { return .key_enum }
 		'export' { return .key_export }
@@ -79,6 +84,7 @@ fun keyword_to_kind(name string) TokKind {
 		'interface' { return .key_interface }
 		'module' { return .key_module }
 		'readonly' { return .key_readonly }
+		'static' { return .key_static }
 		else { return .name }
 	}
 }

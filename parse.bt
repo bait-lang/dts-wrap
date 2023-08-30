@@ -79,16 +79,27 @@ fun (mut p Parser) class_decl() Class {
 	p.check(.lcur)
 	for p.tok.kind != .rcur {
 		p.skip(.key_readonly)
-		fname := p.check_name()
 
-		// TODO how to hanlde constructors?
-		if fname == 'constructor' {
+		// TODO how to hanlde constructors in Bait?
+		if p.tok.kind == .key_constructor {
+			p.next()
 			p.check(.lpar)
-			params := p.params()
+			p.params()
 			p.check(.rpar)
 			continue
 		}
 
+		// TODO how to handle static members in Bait?
+		if p.tok.kind == .key_static {
+			p.next()
+			p.check(.key_readonly)
+			p.check_name()
+			p.check(.colon)
+			p.check_name()
+			continue
+		}
+
+		fname := p.check_name()
 		if p.tok.kind == .lpar {
 			methods.push(p.method(fname))
 		} else {
