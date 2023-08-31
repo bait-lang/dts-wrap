@@ -184,6 +184,10 @@ fun (mut p Parser) interface_decl() Interface {
 
 		p.skip(.key_readonly)
 		fname := p.check_name()
+
+		// TODO properly handle optional members that can be undefined
+		p.skip(.question)
+
 		if p.tok.kind == .lpar {
 			methods.push(p.method(fname))
 		} else {
@@ -201,7 +205,7 @@ fun (mut p Parser) interface_decl() Interface {
 }
 
 fun (mut p Parser) field(name string) Field {
-	// TODO properly handle optional fields that can be undefined
+	// Required for optional params
 	p.skip(.question)
 
 	p.check(.colon)
