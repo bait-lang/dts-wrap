@@ -66,7 +66,12 @@ fun (mut p Parser) decl() Decl {
 fun (mut p Parser) class_decl() Class {
 	p.next()
 	name := p.check_name()
-	p.table.register_type(name)
+	if p.tok.kind == .lt {
+		// TODO store this info in Class and use for codegen
+		p.generic_type(name)
+	} else {
+		p.table.register_type(name)
+	}
 
 	mut ext_type := VOID_IDX
 	if p.tok.kind == .key_extends {
@@ -151,7 +156,12 @@ fun (mut p Parser) enum_decl() Enum {
 fun (mut p Parser) interface_decl() Interface {
 	p.next()
 	name := p.check_name()
-	p.table.register_type(name)
+	if p.tok.kind == .lt {
+		// TODO store this info in Interface and use for codegen
+		p.generic_type(name)
+	} else {
+		p.table.register_type(name)
+	}
 
 	mut ext_type := VOID_IDX
 	if p.tok.kind == .key_extends {
@@ -267,10 +277,7 @@ fun (mut p Parser) parse_single_type() i32 {
 
 	// Generics
 	if p.tok.kind == .lt {
-		p.next()
-		gidx := p.parse_type()
-		p.check(.gt)
-		return p.table.register_generic(name, gidx)
+		return p.generic_type(name)
 	}
 
 	// Normal types
@@ -281,6 +288,13 @@ fun (mut p Parser) parse_array_type(name string) i32 {
 	p.check(.lbr)
 	p.check(.rbr)
 	return p.table.register_array(name)
+}
+
+fun (mut p Parser) generic_type(name string) i32 {
+	p.check(.lt)
+	gidx := p.parse_type()
+	p.check(.gt)
+	return p.table.register_generic(name, gidx)
 }
 
 fun (mut p Parser) parse_object_type() i32 {
