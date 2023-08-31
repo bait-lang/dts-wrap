@@ -313,8 +313,22 @@ fun (mut p Parser) parse_object_type() i32 {
 	p.check(.lcur)
 	mut fields := []Field
 	for p.tok.kind != .rcur {
+		mut has_property_type := false
+		if p.tok.kind == .lbr {
+			p.next()
+			has_property_type = true
+		}
+
 		p.skip(.key_readonly)
 		fname := p.check_name()
+
+		if has_property_type {
+			// TODO how to handle this in Bait?
+			p.check(.colon)
+			p.parse_type()
+			p.check(.rbr)
+		}
+
 		fields.push(p.field(fname))
 	}
 	p.check(.rcur)
