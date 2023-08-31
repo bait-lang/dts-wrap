@@ -34,7 +34,7 @@ fun (mut t Table) register_type(name string) i32 {
 		return idx
 	}
 
-	return t.add_simple_type(name, '#JS.${name}')
+	return t.add_simple_type(name, name)
 }
 
 fun (mut t Table) register_generic(name string, gidx i32) i32 {
@@ -102,6 +102,7 @@ fun (mut t Table) register_object(fields []Field) i32 {
 	}
 
 	return t.push_type(name, TypeSym{
+		name = name
 		is_object = true
 		variants = variants
 		variant_names = variant_names
@@ -145,12 +146,12 @@ const VOID_IDX := 1
 const ANY_IDX := 2
 
 fun (mut t Table) register_builtins() {
-	t.register_type('_unknown')
+	t.register_type('unknown')
 	t.register_type('void')
-	t.add_simple_type('any', '#JS.Any')
-	t.add_simple_type('boolean', '#JS.Boolean')
-	t.add_simple_type('number', '#JS.Number')
-	t.add_simple_type('string', '#JS.String')
+	t.add_simple_type('any', 'Any')
+	t.add_simple_type('boolean', 'Boolean')
+	t.add_simple_type('number', 'Number')
+	t.add_simple_type('string', 'String')
 }
 
 fun (t Table) type_str(idx i32) string {
@@ -180,5 +181,5 @@ fun (t Table) type_str(idx i32) string {
 		return t.type_str(ANY_IDX)
 	}
 
-	return typ.name
+	return '#JS.' + typ.name
 }

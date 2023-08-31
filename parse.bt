@@ -225,7 +225,11 @@ fun (mut p Parser) params() []Field {
 
 fun (mut p Parser) parse_type() i32 {
 	if p.tok.kind == .lcur {
-		return p.parse_object_type()
+		typ := p.parse_object_type()
+		if p.tok.kind == .lbr {
+			return p.parse_array_type(p.table.types[typ].name)
+		}
+		return typ
 	}
 
 	if p.tok.kind == .lpar {
