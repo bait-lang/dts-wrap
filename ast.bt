@@ -41,4 +41,6 @@ struct Method {
 	name string
 	params []Field
 	ret_type i32
+mut:
+	is_anon bool
 }

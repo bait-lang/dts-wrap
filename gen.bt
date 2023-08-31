@@ -70,6 +70,11 @@ fun (mut g Gen) interface_decl(node Interface) {
 	}
 
 	for method in node.methods {
+		// TODO how to gen anon methods?
+		if method.is_anon {
+			continue
+		}
+
 		g.write('\t${method.name}(')
 		g.params(method.params)
 		g.ret_type(method.ret_type)
