@@ -258,6 +258,10 @@ fun (mut p Parser) parse_type() i32 {
 		return p.parse_fun_type()
 	}
 
+	if p.tok.kind == .lbr {
+		return p.tuple_type()
+	}
+
 	typ := p.parse_single_type()
 	if p.tok.kind != .pipe {
 		return typ
@@ -343,6 +347,19 @@ fun (mut p Parser) parse_fun_type() i32 {
 	ret_type := p.parse_type()
 
 	return p.table.register_fun(params, ret_type)
+}
+
+fun (mut p Parser) tuple_type() i32 {
+	p.check(.lbr)
+	mut variants := []i32
+	for p.tok.kind != .rbr {
+		variants.push(p.parse_single_type())
+		if p.tok.kind != .rbr {
+			p.check(.comma)
+		}
+	}
+	p.next()
+	return p.table.register_tuple(variants)
 }
 
 fun (mut p Parser) skip(kind TokKind) {
