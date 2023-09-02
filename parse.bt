@@ -263,15 +263,23 @@ fun (mut p Parser) type_alias_decl() TypeAlias {
 }
 
 fun (mut p Parser) parse_type() i32 {
+	typ := p.complex_type()
+	if p.tok.kind == .lbr {
+		return p.parse_array_type(p.table.types[typ].name)
+	}
+	return typ
+}
+
+fun (mut p Parser) complex_type() i32 {
 	if p.tok.kind == .lcur {
-		typ := p.parse_object_type()
-		if p.tok.kind == .lbr {
-			return p.parse_array_type(p.table.types[typ].name)
-		}
-		return typ
+		return p.parse_object_type()
 	}
 
 	if p.tok.kind == .lpar {
+		p.next()
+		if p.next_tok.kind == .pipe {
+			return p.grouped_type()
+		}
 		return p.parse_fun_type()
 	}
 
@@ -291,6 +299,12 @@ fun (mut p Parser) parse_type() i32 {
 	}
 
 	return p.table.register_union(variants)
+}
+
+fun (mut p Parser) grouped_type() i32 {
+	typ := p.parse_type()
+	p.check(.rpar)
+	return typ
 }
 
 fun (mut p Parser) parse_single_type() i32 {
@@ -366,7 +380,6 @@ fun (mut p Parser) parse_object_type() i32 {
 }
 
 fun (mut p Parser) parse_fun_type() i32 {
-	p.check(.lpar)
 	params := p.params()
 	p.check(.rpar)
 	p.check(.arrow)
