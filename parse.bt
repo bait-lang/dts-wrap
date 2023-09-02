@@ -326,6 +326,15 @@ fun (mut p Parser) parse_array_type(name string) i32 {
 fun (mut p Parser) generic_type(name string) i32 {
 	p.check(.lt)
 	gidx := p.parse_type()
+
+	if p.tok.kind == .key_extends {
+		// TODO somehow handle this
+		p.next()
+		p.skip(.name)
+		p.skip(.assign)
+		p.skip(.name)
+	}
+
 	p.check(.gt)
 	return p.table.register_generic(name, gidx)
 }
