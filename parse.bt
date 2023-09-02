@@ -295,7 +295,7 @@ fun (mut p Parser) complex_type() i32 {
 	mut variants := [typ]
 	for p.tok.kind == .pipe {
 		p.next()
-		variants.push(p.parse_single_type())
+		variants.push(p.complex_type())
 	}
 
 	return p.table.register_union(variants)
