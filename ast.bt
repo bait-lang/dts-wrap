@@ -2,7 +2,7 @@
 // This Source Code is subject to the terms of the Mozilla Public License 2.0.
 package main
 
-type Decl := Class | Const | Enum | Interface
+type Decl := Class | Const | Enum | Interface | TypeAlias
 
 struct Package {
 	name string
@@ -43,4 +43,10 @@ struct Method {
 	ret_type i32
 mut:
 	is_anon bool
+}
+
+struct TypeAlias {
+	name string
+	typ i32
+	child i32
 }

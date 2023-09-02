@@ -30,7 +30,6 @@ fun (mut p Parser) pkg_decl() Package {
 	mut decls := []Decl
 	p.check(.lcur)
 	for p.tok.kind != .rcur {
-		p.skip(.key_export)
 		decls.push(p.decl())
 	}
 	p.check(.rcur)
@@ -42,6 +41,8 @@ fun (mut p Parser) pkg_decl() Package {
 }
 
 fun (mut p Parser) decl() Decl {
+	p.skip(.key_export)
+
 	match p.tok.kind {
 		.key_class {
 			return p.class_decl()
@@ -54,6 +55,9 @@ fun (mut p Parser) decl() Decl {
 		}
 		.key_interface {
 			return p.interface_decl()
+		}
+		.key_type{
+			return p.type_alias_decl()
 		}
 		else {
 			eprintln('unexpected token ${p.tok.kind}: ${p.tok.val}')
@@ -243,6 +247,19 @@ fun (mut p Parser) params() []Field {
 		}
 	}
 	return params
+}
+
+fun (mut p Parser) type_alias_decl() TypeAlias {
+	p.next()
+	typ := p.parse_type()
+	p.check(.assign)
+	child := p.parse_type()
+
+	return TypeAlias{
+		name = p.table.types[typ].name
+		typ = typ
+		child = child
+	}
 }
 
 fun (mut p Parser) parse_type() i32 {

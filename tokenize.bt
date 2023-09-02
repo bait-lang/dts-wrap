@@ -36,6 +36,7 @@ enum TokKind {
 	key_private
 	key_readonly
 	key_static
+	key_type
 }
 
 fun (k TokKind) str()string{
@@ -73,6 +74,7 @@ fun (k TokKind) str()string{
 		.key_private { return 'private' }
 		.key_readonly { return 'readonly' }
 		.key_static { return 'static' }
+		.key_type { return 'type' }
 	}
 }
 
@@ -90,6 +92,7 @@ fun keyword_to_kind(name string) TokKind {
 		'private' { return .key_private }
 		'readonly' { return .key_readonly }
 		'static' { return .key_static }
+		'type' { return .key_type }
 		else { return .name }
 	}
 }

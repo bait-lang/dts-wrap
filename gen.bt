@@ -28,6 +28,8 @@ fun (mut g Gen) decls(decls []Decl) {
 			g.enum_decl(decl as Enum)
 		} else if decl is Interface {
 			g.interface_decl(decl as Interface)
+		} else if decl is TypeAlias {
+			g.type_alias_decl(decl as TypeAlias)
 		} else {
 			eprintln('unsupported decl: ${decl}')
 		}
@@ -104,6 +106,11 @@ fun (mut g Gen) ret_type(typ i32) {
 	} else {
 		g.writeln(') ${g.typ(typ)}')
 	}
+}
+
+fun (mut g Gen) type_alias_decl(node TypeAlias) {
+	// TODO remove name and use g.typ(node.typ)
+	g.writeln('type ${node.name} := ${g.typ(node.child)}')
 }
 
 fun (mut g Gen) typ(typ i32) string {
