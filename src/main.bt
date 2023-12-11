@@ -1,0 +1,17 @@
+// SPDX-FileCopyrightText: 2023-present Lukas Neubert <lukas.neubert@proton.me>
+// SPDX-License-Identifier: MPL-2.0
+package main
+
+import os
+
+fun main() {
+	args := os.user_args()
+	if args.length == 0 {
+		eprintln('usage: dts-wrap <file.d.ts>')
+		exit(0)
+	}
+
+	text := os.read_file(args[0])
+	ast := parse(text)
+	println(ast)
+}

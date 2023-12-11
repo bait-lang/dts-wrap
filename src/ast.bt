@@ -1,0 +1,29 @@
+// SPDX-FileCopyrightText: 2023-present Lukas Neubert <lukas.neubert@proton.me>
+// SPDX-License-Identifier: MPL-2.0
+package main
+
+type Decl := Interface | EmptyDecl
+
+struct Module {
+	name string
+	decls []Decl
+}
+
+struct Interface {
+	name string
+	fields []Field
+	methods []Method
+}
+
+struct Field {
+	name string
+	typ i32
+}
+
+struct Method {
+	name string
+	params []Field
+	return_type i32
+}
+
+struct EmptyDecl{}

@@ -1,0 +1,92 @@
+// SPDX-FileCopyrightText: 2023-present Lukas Neubert <lukas.neubert@proton.me>
+// SPDX-License-Identifier: MPL-2.0
+package main
+
+struct Tokenizer {
+mut:
+	text string
+	pos i32
+	lit string
+}
+
+fun (mut t Tokenizer) init(text string) {
+	t.text = text
+}
+
+fun (mut t Tokenizer) next() TokenKind {
+	t.skip_whitespace()
+	if t.pos >= t.text.length {
+		return .eof
+	}
+
+	c := t.text[t.pos]
+	t.pos += 1
+
+	if c == `/` {
+		c2 := t.text[t.pos]
+		if c2 == `/` {
+			t.skip_line()
+			return t.next()
+		}
+		if c2 == `*` {
+			t.skip_block()
+			return t.next()
+		}
+	} else if is_name_char(c) {
+		start := t.pos - 1
+		for t.pos < t.text.length {
+			if is_name_char(t.text[t.pos]) {
+				t.pos += 1
+			} else {
+				break
+			}
+		}
+		t.lit = t.text.substr(start, t.pos)
+		kind := tok_from_string(t.lit)
+		return kind
+	} else if c == `'` {
+		start := t.pos
+		for t.pos < t.text.length and t.text[t.pos] != `'` {
+			t.pos += 1
+		}
+		t.lit = t.text.substr(start, t.pos)
+		t.pos += 1
+		return .string
+	}
+
+	return match c {
+		`{` { TokenKind.lcur }
+		`}` { .rcur }
+		else { .unknown }
+	}
+}
+
+fun (mut t Tokenizer) skip_line() {
+	for t.pos < t.text.length and t.text[t.pos] != `\n` {
+		t.pos += 1
+	}
+}
+
+fun (mut t Tokenizer) skip_block() {
+	for t.pos < t.text.length {
+		if t.text[t.pos] == `*` and t.text[t.pos + 1] == `/` {
+			t.pos += 2
+			break
+		}
+		t.pos += 1
+	}
+}
+
+fun (mut t Tokenizer) skip_whitespace() {
+	for t.pos < t.text.length {
+		if [` `, `\t`, `\n`].contains(t.text[t.pos]) {
+			t.pos += 1
+		} else {
+			break
+		}
+	}
+}
+
+fun is_name_char(c u8) bool {
+	return (c >= `a` and c <= `z`) or (c >= `A` and c <= `Z`)
+}
