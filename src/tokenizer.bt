@@ -6,6 +6,7 @@ struct Tokenizer {
 mut:
 	text string
 	pos i32
+	start i32
 	lit string
 }
 
@@ -33,32 +34,39 @@ fun (mut t Tokenizer) next() TokenKind {
 			return t.next()
 		}
 	} else if is_name_char(c) {
-		start := t.pos - 1
-		for t.pos < t.text.length {
-			if is_name_char(t.text[t.pos]) {
-				t.pos += 1
-			} else {
-				break
-			}
-		}
-		t.lit = t.text.substr(start, t.pos)
-		kind := tok_from_string(t.lit)
-		return kind
-	} else if c == `'` {
-		start := t.pos
-		for t.pos < t.text.length and t.text[t.pos] != `'` {
-			t.pos += 1
-		}
-		t.lit = t.text.substr(start, t.pos)
-		t.pos += 1
-		return .string
+		return t.name_or_key()
 	}
 
 	return match c {
-		`{` { TokenKind.lcur }
+		`'` { t.string_literal() }
+		`{` { .lcur }
 		`}` { .rcur }
 		else { .unknown }
 	}
+}
+
+fun (mut t Tokenizer) name_or_key() TokenKind {
+	t.start = t.pos - 1
+	for t.pos < t.text.length {
+		if is_name_char(t.text[t.pos]) {
+			t.pos += 1
+		} else {
+			break
+		}
+	}
+	t.lit = t.text.substr(t.start, t.pos)
+	kind := tok_from_string(t.lit)
+	return kind
+}
+
+fun (mut t Tokenizer) string_literal() TokenKind {
+	t.start = t.pos
+	for t.pos < t.text.length and t.text[t.pos] != `'` {
+		t.pos += 1
+	}
+	t.lit = t.text.substr(t.start, t.pos)
+	t.pos += 1
+	return .string
 }
 
 fun (mut t Tokenizer) skip_line() {

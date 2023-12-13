@@ -17,28 +17,11 @@ enum TokenKind {
 }
 
 fun tok_from_string(name string) TokenKind {
-	match name.length {
-		6 {
-			return match name {
-				'export' { TokenKind.key_export }
-				'module' { .key_module }
-				else { .name }
-			}
-		}
-		7 {
-			return match name {
-				'declare' { TokenKind.key_declare }
-				else { .name }
-			}
-		}
-		9 {
-			return match name {
-				'interface' { TokenKind.key_interface }
-				else { .name }
-			}
-		}
-		else {
-			return .name
-		}
+	return match name {
+		'declare' { .key_declare }
+		'export' { .key_export }
+		'interface' { .key_interface }
+		'module' { .key_module }
+		else { .name }
 	}
 }

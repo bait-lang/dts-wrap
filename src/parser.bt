@@ -49,7 +49,6 @@ fun (mut p Parser) decl() Decl {
 		}
 		else {
 			panic("unexpected token ${p.tok}")
-			return EmptyDecl{}
 		}
 	}
 }
@@ -59,7 +58,9 @@ fun (mut p Parser) interface_decl() Interface {
 	name := p.expect_name()
 	p.expect(.lcur)
 	p.expect(.rcur)
-	return Interface{}
+	return Interface{
+		name = name
+	}
 }
 
 fun (mut p Parser) skip(tok TokenKind) {
