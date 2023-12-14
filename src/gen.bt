@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-fun generate(mod Module) string {
-	mut g := Gen{}
+fun generate(mod Module, table Table) string {
+	mut g := Gen{
+		table = table
+	}
 	return g.gen(mod)
 }
 
 struct Gen {
 mut:
+	table Table
 	mod_name string
 	out string
 }
@@ -31,6 +34,9 @@ fun (mut g Gen) decls(decls []Decl) {
 
 fun (mut g Gen) decl(decl Decl) {
 	match decl {
+		Const {
+			g.const_decl(decl)
+		}
 		Interface {
 			g.interface_decl(decl)
 		}
@@ -38,6 +44,10 @@ fun (mut g Gen) decl(decl Decl) {
 			panic('cannot gen ${decl}')
 		}
 	}
+}
+
+fun (mut g Gen) const_decl(decl Const) {
+	g.out += 'pub const ${g.mod_name}.${decl.name} := ${g.typ(decl.typ)}\n\n'
 }
 
 fun (mut g Gen) interface_decl(decl Interface) {
@@ -55,4 +65,8 @@ fun (mut g Gen) fields(fields []Field) {
 
 fun (mut g Gen) field(field Field) {
 	// TODO
+}
+
+fun (mut g Gen) typ(typ i32) string {
+	return g.table.syms[typ].name
 }
