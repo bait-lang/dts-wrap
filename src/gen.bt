@@ -1,0 +1,58 @@
+// SPDX-FileCopyrightText: 2023-present Lukas Neubert <lukas.neubert@proton.me>
+// SPDX-License-Identifier: MPL-2.0
+package main
+
+fun generate(mod Module) string {
+	mut g := Gen{}
+	return g.gen(mod)
+}
+
+struct Gen {
+mut:
+	mod_name string
+	out string
+}
+
+fun (mut g Gen) gen(mod Module) string {
+	g.out += 'package ' + mod.name + '\n\n'
+	g.out += "import '${mod.name}' as #JS.${mod.name}\n\n"
+
+	g.mod_name = '#JS.' + mod.name
+	g.decls(mod.decls)
+
+	return g.out
+}
+
+fun (mut g Gen) decls(decls []Decl) {
+	for decl in decls {
+		g.decl(decl)
+	}
+}
+
+fun (mut g Gen) decl(decl Decl) {
+	match decl {
+		Interface {
+			g.interface_(decl)
+		}
+		else {
+			panic('cannot gen ${decl}')
+		}
+	}
+}
+
+fun (mut g Gen) interface_(decl Interface) {
+	g.out += 'pub interface ${g.mod_name}.${decl.name}{\n'
+	// g.out += 'pub:\n'
+	g.fields(decl.fields)
+	g.out += '}\n\n'
+}
+
+fun (mut g Gen) fields(fields []Field) {
+	for field in fields {
+		g.field(field)
+	}
+}
+
+fun (mut g Gen) field(field Field) {
+	// TODO
+}

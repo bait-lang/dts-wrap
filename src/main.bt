@@ -7,11 +7,20 @@ import os
 fun main() {
 	args := os.user_args()
 	if args.length == 0 {
-		eprintln('usage: dts-wrap <file.d.ts>')
+		eprintln('usage: dts-wrap <file.d.ts> [options]')
 		exit(0)
 	}
 
+	show_ast := args.contains('--show-ast')
+
 	text := os.read_file(args[0])
 	ast := parse(text)
-	println(ast)
+
+	if show_ast {
+		println(ast)
+		exit(0)
+	}
+
+	out := generate(ast)
+	os.write_file('out/${ast.name}/${ast.name}.js.bt', out)
 }
