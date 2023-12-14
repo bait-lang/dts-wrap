@@ -2,20 +2,23 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-fun generate(mod Module) string {
-	mut g := Gen{}
+fun generate(mod Module, table Table) string {
+	mut g := Gen{
+		table = table
+	}
 	return g.gen(mod)
 }
 
 struct Gen {
 mut:
+	table Table
 	mod_name string
 	out string
 }
 
 fun (mut g Gen) gen(mod Module) string {
-	g.out += 'package ' + mod.name + '\n\n'
-	g.out += "import '${mod.name}' as #JS.${mod.name}\n\n"
+	g.writeln('package ' + mod.name + '\n')
+	g.writeln("import '${mod.name}' as #JS.${mod.name}\n")
 
 	g.mod_name = '#JS.' + mod.name
 	g.decls(mod.decls)
@@ -31,8 +34,11 @@ fun (mut g Gen) decls(decls []Decl) {
 
 fun (mut g Gen) decl(decl Decl) {
 	match decl {
+		Const {
+			g.const_decl(decl)
+		}
 		Interface {
-			g.interface_(decl)
+			g.interface_decl(decl)
 		}
 		else {
 			panic('cannot gen ${decl}')
@@ -40,11 +46,15 @@ fun (mut g Gen) decl(decl Decl) {
 	}
 }
 
-fun (mut g Gen) interface_(decl Interface) {
-	g.out += 'pub interface ${g.mod_name}.${decl.name}{\n'
+fun (mut g Gen) const_decl(decl Const) {
+	g.writeln('pub const ${g.mod_name}.${decl.name} := ${g.typ(decl.typ)}\n')
+}
+
+fun (mut g Gen) interface_decl(decl Interface) {
+	g.writeln('pub interface ${g.mod_name}.${decl.name}{')
 	// g.out += 'pub:\n'
 	g.fields(decl.fields)
-	g.out += '}\n\n'
+	g.writeln('}\n')
 }
 
 fun (mut g Gen) fields(fields []Field) {
@@ -55,4 +65,16 @@ fun (mut g Gen) fields(fields []Field) {
 
 fun (mut g Gen) field(field Field) {
 	// TODO
+}
+
+fun (mut g Gen) typ(typ i32) string {
+	return g.table.syms[typ].name
+}
+
+fun (mut g Gen) write (s string){
+	g.out += s
+}
+
+fun (mut g Gen) writeln (s string){
+	g.out += s + "\n"
 }

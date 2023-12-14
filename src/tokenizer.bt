@@ -41,6 +41,8 @@ fun (mut t Tokenizer) next() TokenKind {
 		`'` { t.string_literal() }
 		`{` { .lcur }
 		`}` { .rcur }
+		`:` { .colon }
+		`;` { .semi }
 		else { .unknown }
 	}
 }

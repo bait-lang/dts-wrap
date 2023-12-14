@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-fun parse(text string) Module {
-	mut p := Parser{}
+fun parse(text string, table Table) Module {
+	mut p := Parser{
+		table = table
+	}
 	p.init(text)
 	return p.parse()
 }
 
 struct Parser {
 mut:
+	table Table
 	tokenizer Tokenizer
 	tok TokenKind
 	lit string
@@ -23,18 +26,18 @@ fun (mut p Parser) init(text string) {
 fun (mut p Parser) parse() Module {
 	p.next()
 
-	p.expect(.key_declare)
-	p.expect(.key_module)
+	p.check(.key_declare)
+	p.check(.key_module)
 	mod_name := p.lit
-	p.expect(.string)
-	p.expect(.lcur)
+	p.check(.string)
+	p.check(.lcur)
 
 	mut decls := []Decl
 	for p.tok != .rcur {
 		decls.push(p.decl())
 	}
 
-	p.expect(.rcur)
+	p.check(.rcur)
 	return Module{
 		name = mod_name
 		decls = decls
@@ -44,23 +47,45 @@ fun (mut p Parser) parse() Module {
 fun (mut p Parser) decl() Decl {
 	p.skip(.key_export)
 	match p.tok {
+		.key_const {
+			return p.const_decl()
+		}
 		.key_interface {
 			return p.interface_decl()
 		}
 		else {
-			panic("unexpected token ${p.tok}")
+			panic("unexpected token ${p.tok}, ${p.tokenizer.lit}")
 		}
+	}
+}
+
+fun (mut p Parser) const_decl() Const {
+	p.next()
+	name := p.check_name()
+	p.check(.colon)
+	typ := p.parse_type()
+	p.skip(.semi)
+	return Const{
+		name = name
+		typ = typ
 	}
 }
 
 fun (mut p Parser) interface_decl() Interface {
 	p.next()
-	name := p.expect_name()
-	p.expect(.lcur)
-	p.expect(.rcur)
+	name := p.check_name()
+	p.check(.lcur)
+	// TODO fields
+	// TODO methods
+	p.check(.rcur)
 	return Interface{
 		name = name
 	}
+}
+
+fun (mut p Parser) parse_type() i32 {
+	name := p.check_name()
+	return p.table.register(name)
 }
 
 fun (mut p Parser) skip(tok TokenKind) {
@@ -69,14 +94,14 @@ fun (mut p Parser) skip(tok TokenKind) {
 	}
 }
 
-fun (mut p Parser) expect(tok TokenKind) {
+fun (mut p Parser) check(tok TokenKind) {
 	if p.tok != tok {
 		panic("got ${p.tok}, expected ${tok}")
 	}
 	p.next()
 }
 
-fun (mut p Parser) expect_name() string {
+fun (mut p Parser) check_name() string {
 	if p.tok != .name {
 		panic("got ${p.tok}, expected .name")
 	}

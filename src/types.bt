@@ -1,0 +1,41 @@
+// SPDX-FileCopyrightText: 2023-present Lukas Neubert <lukas.neubert@proton.me>
+// SPDX-License-Identifier: MPL-2.0
+package main
+
+struct TypeSym {
+	name string
+}
+
+struct Table {
+mut:
+	indexes map[string]i32
+	syms []TypeSym
+}
+
+fun (mut t Table) init() {
+	t.register('unknown')
+	t.register_builtin('string', 'String')
+}
+
+fun (mut t Table) register(name string) i32 {
+	idx := t.indexes[name]
+	if idx > 0 {
+		return idx
+	}
+
+	new_idx := t.syms.length
+	t.syms.push(TypeSym{
+		name = '#JS.' + name
+	})
+	t.indexes[name] = new_idx
+	return new_idx
+}
+
+fun (mut t Table) register_builtin(name string, bait_name string) i32 {
+	new_idx := t.syms.length
+	t.syms.push(TypeSym{
+		name = '#JS.' + bait_name
+	})
+	t.indexes[name] = new_idx
+	return new_idx
+}

@@ -13,14 +13,17 @@ fun main() {
 
 	show_ast := args.contains('--show-ast')
 
+	mut table := Table{}
+	table.init()
+
 	text := os.read_file(args[0])
-	ast := parse(text)
+	ast := parse(text, table)
 
 	if show_ast {
 		println(ast)
 		exit(0)
 	}
 
-	out := generate(ast)
+	out := generate(ast, table)
 	os.write_file('out/${ast.name}/${ast.name}.js.bt', out)
 }
