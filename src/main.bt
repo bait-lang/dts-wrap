@@ -13,8 +13,9 @@ fun main() {
 
 	show_ast := args.contains('--show-ast')
 
+	mut table := Table{}
 	text := os.read_file(args[0])
-	ast := parse(text)
+	ast := parse(text, table)
 
 	if show_ast {
 		println(ast)

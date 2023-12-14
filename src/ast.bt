@@ -2,11 +2,16 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-type Decl := Interface | EmptyDecl
+type Decl := Const | Interface | EmptyDecl
 
 struct Module {
 	name string
 	decls []Decl
+}
+
+struct Const {
+	name string
+	typ i32
 }
 
 struct Interface {

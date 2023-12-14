@@ -9,7 +9,10 @@ enum TokenKind {
 	string
 	lcur
 	rcur
+	colon
+	semi
 	name
+	key_const
 	key_declare
 	key_export
 	key_interface
@@ -18,6 +21,7 @@ enum TokenKind {
 
 fun tok_from_string(name string) TokenKind {
 	return match name {
+		'const' { .key_const }
 		'declare' { .key_declare }
 		'export' { .key_export }
 		'interface' { .key_interface }

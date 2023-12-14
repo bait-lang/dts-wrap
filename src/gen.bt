@@ -32,7 +32,7 @@ fun (mut g Gen) decls(decls []Decl) {
 fun (mut g Gen) decl(decl Decl) {
 	match decl {
 		Interface {
-			g.interface_(decl)
+			g.interface_decl(decl)
 		}
 		else {
 			panic('cannot gen ${decl}')
@@ -40,7 +40,7 @@ fun (mut g Gen) decl(decl Decl) {
 	}
 }
 
-fun (mut g Gen) interface_(decl Interface) {
+fun (mut g Gen) interface_decl(decl Interface) {
 	g.out += 'pub interface ${g.mod_name}.${decl.name}{\n'
 	// g.out += 'pub:\n'
 	g.fields(decl.fields)
