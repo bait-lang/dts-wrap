@@ -5,6 +5,7 @@ package main
 struct Tokenizer {
 mut:
 	text string
+	line_offsets []i32
 	pos i32
 	start i32
 	lit string
@@ -12,6 +13,11 @@ mut:
 
 fun (mut t Tokenizer) init(text string) {
 	t.text = text
+	t.line_offsets = [0]
+}
+
+fun (t Tokenizer) get_line() i32 {
+	return t.line_offsets.length
 }
 
 fun (mut t Tokenizer) next() TokenKind {
@@ -43,7 +49,7 @@ fun (mut t Tokenizer) next() TokenKind {
 		`}` { .rcur }
 		`:` { .colon }
 		`;` { .semi }
-		else { .unknown }
+		else { t.unknown() }
 	}
 }
 
@@ -75,26 +81,42 @@ fun (mut t Tokenizer) skip_line() {
 	for t.pos < t.text.length and t.text[t.pos] != `\n` {
 		t.pos += 1
 	}
+	t.pos += 1
+	t.line_offsets.push(t.pos)
 }
 
 fun (mut t Tokenizer) skip_block() {
 	for t.pos < t.text.length {
-		if t.text[t.pos] == `*` and t.text[t.pos + 1] == `/` {
+		c := t.text[t.pos]
+		if c == `\n` {
+			t.pos += 1
+			t.line_offsets.push(t.pos)
+		} else if c == `*` and t.text[t.pos + 1] == `/` {
 			t.pos += 2
 			break
+		} else {
+			t.pos += 1
 		}
-		t.pos += 1
 	}
 }
 
 fun (mut t Tokenizer) skip_whitespace() {
 	for t.pos < t.text.length {
-		if [` `, `\t`, `\n`].contains(t.text[t.pos]) {
+		c := t.text[t.pos]
+		if c == `\n` {
+			t.pos += 1
+			t.line_offsets.push(t.pos)
+		} else if c == ` ` or c == `\t` {
 			t.pos += 1
 		} else {
 			break
 		}
 	}
+}
+
+fun (mut t Tokenizer) unknown() TokenKind {
+	t.lit = t.text[t.pos - 1].ascii()
+	return .unknown
 }
 
 fun is_name_char(c u8) bool {

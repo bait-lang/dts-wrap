@@ -54,7 +54,8 @@ fun (mut p Parser) decl() Decl {
 			return p.interface_decl()
 		}
 		else {
-			panic("unexpected token ${p.tok}, ${p.tokenizer.lit}")
+			p.error("unexpected token ${p.tok}, ${p.tokenizer.lit}")
+			exit(1) // TODO remove once @noreturn is implemented
 		}
 	}
 }
@@ -75,11 +76,22 @@ fun (mut p Parser) interface_decl() Interface {
 	p.next()
 	name := p.check_name()
 	p.check(.lcur)
-	// TODO fields
-	// TODO methods
+	mut fields := []Field
+	for p.tok != .rcur {
+		fname := p.check_name()
+		p.check(.colon)
+		typ := p.parse_type()
+		p.skip(.semi)
+		fields.push(Field{
+			name = fname
+			typ = typ
+		})
+		// TODO methods
+	}
 	p.check(.rcur)
 	return Interface{
 		name = name
+		fields = fields
 	}
 }
 
@@ -96,21 +108,25 @@ fun (mut p Parser) skip(tok TokenKind) {
 
 fun (mut p Parser) check(tok TokenKind) {
 	if p.tok != tok {
-		panic("got ${p.tok}, expected ${tok}")
+		p.error("got ${p.tok} (${p.tokenizer.lit}), expected ${tok}")
+		exit(1) // TODO remove once @noreturn is implemented
 	}
 	p.next()
 }
 
 fun (mut p Parser) check_name() string {
-	if p.tok != .name {
-		panic("got ${p.tok}, expected .name")
-	}
 	name := p.lit
-	p.next()
+	p.check(.name)
 	return name
 }
 
 fun (mut p Parser) next() {
 	p.tok = p.tokenizer.next()
 	p.lit = p.tokenizer.lit
+}
+
+fun (p Parser) error(msg string) {
+	l := p.tokenizer.get_line()
+	eprintln('line ${l}: ${msg}')
+	exit(1)
 }
