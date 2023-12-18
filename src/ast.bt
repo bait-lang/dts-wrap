@@ -11,7 +11,7 @@ struct Module {
 
 struct Const {
 	name string
-	typ i32
+	typ Type
 }
 
 struct Interface {
@@ -22,13 +22,13 @@ struct Interface {
 
 struct Field {
 	name string
-	typ i32
+	typ Type
 }
 
 struct Method {
 	name string
 	params []Field
-	return_type i32
+	return_type Type
 }
 
 struct EmptyDecl{}

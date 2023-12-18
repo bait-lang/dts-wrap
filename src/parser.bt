@@ -2,17 +2,14 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-fun parse(text string, table Table) Module {
-	mut p := Parser{
-		table = table
-	}
+fun parse(text string) Module {
+	mut p := Parser{}
 	p.init(text)
 	return p.parse()
 }
 
 struct Parser {
 mut:
-	table Table
 	tokenizer Tokenizer
 	tok TokenKind
 	lit string
@@ -78,7 +75,9 @@ fun (mut p Parser) interface_decl() Interface {
 	p.check(.lcur)
 	mut fields := []Field
 	for p.tok != .rcur {
+		p.skip(.key_readonly) // TODO properly handle modifiers
 		fname := p.check_name()
+		p.skip(.question) // TODO handle optional fields
 		p.check(.colon)
 		typ := p.parse_type()
 		p.skip(.semi)
@@ -95,9 +94,30 @@ fun (mut p Parser) interface_decl() Interface {
 	}
 }
 
-fun (mut p Parser) parse_type() i32 {
+fun (mut p Parser) parse_type() Type {
 	name := p.check_name()
-	return p.table.register(name)
+
+	if p.tok == .lsqr {
+		p.next()
+		p.check(.rsqr)
+		return ArrayType {
+			elem = p.primitive_from_name(name)
+		}
+	}
+
+	return p.primitive_from_name(name)
+}
+
+fun (mut p Parser) primitive_from_name(name string) Primitive {
+	mut kind := PrimitiveKind.unknown
+	match name {
+		"string" { kind = .string }
+		'number' { kind = .number }
+		else { panic('unknown type ${name}') }
+	}
+	return Primitive {
+		kind = kind
+	}
 }
 
 fun (mut p Parser) skip(tok TokenKind) {
@@ -108,7 +128,11 @@ fun (mut p Parser) skip(tok TokenKind) {
 
 fun (mut p Parser) check(tok TokenKind) {
 	if p.tok != tok {
-		p.error("got ${p.tok} (${p.tokenizer.lit}), expected ${tok}")
+		if p.tok == .unknown or p.tok == .name {
+			p.error("got ${p.tok} (${p.tokenizer.lit}), expected ${tok}")
+		} else {
+			p.error("got ${p.tok}, expected ${tok}")
+		}
 		exit(1) // TODO remove once @noreturn is implemented
 	}
 	p.next()

@@ -2,40 +2,33 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-struct TypeSym {
-	name string
+type Type := Primitive | ArrayType
+
+enum PrimitiveKind {
+	unknown
+	string
+	number
 }
 
-struct Table {
-mut:
-	indexes map[string]i32
-	syms []TypeSym
+struct Primitive {
+	kind PrimitiveKind
 }
 
-fun (mut t Table) init() {
-	t.register('unknown')
-	t.register_builtin('string', 'String')
+struct ArrayType {
+	elem Type
 }
 
-fun (mut t Table) register(name string) i32 {
-	idx := t.indexes[name]
-	if idx > 0 {
-		return idx
+fun (t Type) name() string {
+	match t {
+		Primitive { return t.name() }
+		ArrayType { return '[]' + t.elem.name() }
 	}
-
-	new_idx := t.syms.length
-	t.syms.push(TypeSym{
-		name = '#JS.' + name
-	})
-	t.indexes[name] = new_idx
-	return new_idx
 }
 
-fun (mut t Table) register_builtin(name string, bait_name string) i32 {
-	new_idx := t.syms.length
-	t.syms.push(TypeSym{
-		name = '#JS.' + bait_name
-	})
-	t.indexes[name] = new_idx
-	return new_idx
+fun (t Primitive) name() string {
+	return match t.kind {
+		.string { '#JS.String' }
+		.number { '#JS.Number' }
+		else { '' }
+	}
 }

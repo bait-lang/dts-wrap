@@ -7,16 +7,22 @@ enum TokenKind {
 	eof
 	comment
 	string
+	lpar
+	rpar
+	lsqr
+	rsqr
 	lcur
 	rcur
 	colon
 	semi
+	question
 	name
 	key_const
 	key_declare
 	key_export
 	key_interface
 	key_module
+	key_readonly
 }
 
 fun tok_from_string(name string) TokenKind {
@@ -26,6 +32,7 @@ fun tok_from_string(name string) TokenKind {
 		'export' { .key_export }
 		'interface' { .key_interface }
 		'module' { .key_module }
+		'readonly' { .key_readonly }
 		else { .name }
 	}
 }

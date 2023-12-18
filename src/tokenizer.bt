@@ -45,10 +45,15 @@ fun (mut t Tokenizer) next() TokenKind {
 
 	return match c {
 		`'` { t.string_literal() }
+		`(` { .lpar }
+		`)` { .rpar}
+		`[` { .lsqr }
+		`]` { .rsqr }
 		`{` { .lcur }
 		`}` { .rcur }
 		`:` { .colon }
 		`;` { .semi }
+		`?` { .question }
 		else { t.unknown() }
 	}
 }
