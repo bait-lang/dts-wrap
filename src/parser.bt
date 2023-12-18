@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-fun parse(text string) Module {
+fun parse(text string) File {
 	mut p := Parser{}
 	p.init(text)
 	return p.parse()
@@ -20,25 +20,24 @@ fun (mut p Parser) init(text string) {
 	p.tokenizer.init(text)
 }
 
-fun (mut p Parser) parse() Module {
+fun (mut p Parser) parse() File {
 	p.next()
 
-	p.check(.key_declare)
-	p.check(.key_module)
-	mod_name := p.lit
-	p.check(.string)
-	p.check(.lcur)
+	decls := p.decls()
 
-	mut decls := []Decl
-	for p.tok != .rcur {
-		decls.push(p.decl())
-	}
-
-	p.check(.rcur)
-	return Module{
-		name = mod_name
+	return File{
+		name = 'builtin'
 		decls = decls
 	}
+}
+
+fun (mut p Parser) decls() []Decl {
+	mut decls := []Decl
+	for p.tok != .rcur and p.tok != .eof {
+		p.skip(.key_declare)
+		decls.push(p.decl())
+	}
+	return decls
 }
 
 fun (mut p Parser) decl() Decl {
@@ -49,6 +48,12 @@ fun (mut p Parser) decl() Decl {
 		}
 		.key_interface {
 			return p.interface_decl()
+		}
+		.key_module {
+			return p.module_decl()
+		}
+		.key_var {
+			return p.const_decl()
 		}
 		else {
 			p.error("unexpected token ${p.tok}, ${p.tokenizer.lit}")
@@ -91,6 +96,19 @@ fun (mut p Parser) interface_decl() Interface {
 	return Interface{
 		name = name
 		fields = fields
+	}
+}
+
+fun (mut p Parser) module_decl() Module {
+	p.check(.key_module)
+	name := p.lit
+	p.check(.string)
+	p.check(.lcur)
+	decls := p.decls()
+	p.check(.rcur)
+	return Module{
+		name = name
+		decls = decls
 	}
 }
 

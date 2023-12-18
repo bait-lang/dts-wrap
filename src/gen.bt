@@ -2,23 +2,24 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-fun generate(mod Module) string {
+fun generate(ast File) string {
 	mut g := Gen{}
-	return g.gen(mod)
+	return g.gen(ast)
 }
 
 struct Gen {
 mut:
-	mod_name string
+	mod_name string := '#JS'
 	out string
 }
 
-fun (mut g Gen) gen(mod Module) string {
-	g.writeln('package ' + mod.name + '\n')
-	g.writeln("import '${mod.name}' as #JS.${mod.name}\n")
+fun (mut g Gen) gen(ast File) string {
+	g.writeln('package ' + ast.name + '\n')
+	if ast.name != 'builtin' {
+		g.writeln("import '${ast.name}' as #JS.${ast.name}\n")
+	}
 
-	g.mod_name = '#JS.' + mod.name
-	g.decls(mod.decls)
+	g.decls(ast.decls)
 
 	return g.out
 }
@@ -36,6 +37,9 @@ fun (mut g Gen) decl(decl Decl) {
 		}
 		Interface {
 			g.interface_decl(decl)
+		}
+		Module {
+			g.module_decl(decl)
 		}
 		else {
 			panic('cannot gen ${decl}')
@@ -65,6 +69,12 @@ fun (mut g Gen) field(field Field) {
 	g.write(field.name)
 	g.write(' ')
 	g.writeln(field.typ.name())
+}
+
+fun (mut g Gen) module_decl(mod Module) {
+	g.mod_name = '#JS.' + mod.name
+	g.decls(mod.decls)
+	g.mod_name = '#JS'
 }
 
 fun (mut g Gen) write (s string){

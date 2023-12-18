@@ -23,6 +23,7 @@ enum TokenKind {
 	key_interface
 	key_module
 	key_readonly
+	key_var
 }
 
 fun tok_from_string(name string) TokenKind {
@@ -33,6 +34,7 @@ fun tok_from_string(name string) TokenKind {
 		'interface' { .key_interface }
 		'module' { .key_module }
 		'readonly' { .key_readonly }
+		'var' { .key_var }
 		else { .name }
 	}
 }
