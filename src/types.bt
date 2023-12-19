@@ -6,8 +6,10 @@ type Type := Primitive | ArrayType
 
 enum PrimitiveKind {
 	unknown
-	string
+	any
+	bool
 	number
+	string
 }
 
 struct Primitive {
@@ -21,14 +23,16 @@ struct ArrayType {
 fun (t Type) name() string {
 	match t {
 		Primitive { return t.name() }
-		ArrayType { return '[]' + t.elem.name() }
+		ArrayType { return '#JS.Array' }
 	}
 }
 
 fun (t Primitive) name() string {
 	return match t.kind {
-		.string { '#JS.String' }
+		.any { '#JS.Any' }
+		.bool { '#JS.Boolean' }
 		.number { '#JS.Number' }
+		.string { '#JS.String' }
 		else { '' }
 	}
 }

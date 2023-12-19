@@ -14,12 +14,14 @@ enum TokenKind {
 	lcur
 	rcur
 	colon
+	comma
 	semi
 	question
 	name
 	key_const
 	key_declare
 	key_export
+	key_function
 	key_interface
 	key_module
 	key_readonly
@@ -31,6 +33,7 @@ fun tok_from_string(name string) TokenKind {
 		'const' { .key_const }
 		'declare' { .key_declare }
 		'export' { .key_export }
+		'function' { .key_function }
 		'interface' { .key_interface }
 		'module' { .key_module }
 		'readonly' { .key_readonly }

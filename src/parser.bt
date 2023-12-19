@@ -46,6 +46,9 @@ fun (mut p Parser) decl() Decl {
 		.key_const {
 			return p.const_decl()
 		}
+		.key_function {
+			return p.function_decl()
+		}
 		.key_interface {
 			return p.interface_decl()
 		}
@@ -67,10 +70,43 @@ fun (mut p Parser) const_decl() Const {
 	name := p.check_name()
 	p.check(.colon)
 	typ := p.parse_type()
-	p.skip(.semi)
+	p.check(.semi)
 	return Const{
 		name = name
 		typ = typ
+	}
+}
+
+fun (mut p Parser) field() Field {
+	name := p.check_name()
+	p.skip(.question) // TODO handle optional fields
+	p.check(.colon)
+	typ := p.parse_type()
+	return Field{
+		name = name
+		typ = typ
+	}
+}
+
+fun (mut p Parser) function_decl() Function {
+	p.next()
+	name := p.check_name()
+	p.check(.lpar)
+	mut params := []Field
+	for p.tok != .rpar {
+		params.push(p.field())
+		if p.tok == .comma {
+			p.next()
+		}
+	}
+	p.check(.rpar)
+	p.check(.colon)
+	typ := p.parse_type()
+	p.check(.semi)
+	return Function{
+		name = name
+		params = params
+		return_type = typ
 	}
 }
 
@@ -81,15 +117,8 @@ fun (mut p Parser) interface_decl() Interface {
 	mut fields := []Field
 	for p.tok != .rcur {
 		p.skip(.key_readonly) // TODO properly handle modifiers
-		fname := p.check_name()
-		p.skip(.question) // TODO handle optional fields
-		p.check(.colon)
-		typ := p.parse_type()
-		p.skip(.semi)
-		fields.push(Field{
-			name = fname
-			typ = typ
-		})
+		fields.push(p.field())
+		p.check(.semi)
 		// TODO methods
 	}
 	p.check(.rcur)
@@ -119,18 +148,20 @@ fun (mut p Parser) parse_type() Type {
 		p.next()
 		p.check(.rsqr)
 		return ArrayType {
-			elem = p.primitive_from_name(name)
+			elem = p.type_from_name(name)
 		}
 	}
 
-	return p.primitive_from_name(name)
+	return p.type_from_name(name)
 }
 
-fun (mut p Parser) primitive_from_name(name string) Primitive {
+fun (mut p Parser) type_from_name(name string) Primitive {
 	mut kind := PrimitiveKind.unknown
 	match name {
-		"string" { kind = .string }
+		'any' { kind = .any }
+		'boolean' { kind = .bool }
 		'number' { kind = .number }
+		"string" { kind = .string }
 		else { panic('unknown type ${name}') }
 	}
 	return Primitive {

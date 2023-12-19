@@ -52,6 +52,7 @@ fun (mut t Tokenizer) next() TokenKind {
 		`{` { .lcur }
 		`}` { .rcur }
 		`:` { .colon }
+		`,` { .comma }
 		`;` { .semi }
 		`?` { .question }
 		else { t.unknown() }
