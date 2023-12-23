@@ -1,0 +1,75 @@
+// SPDX-FileCopyrightText: 2023-present Lukas Neubert <lukas.neubert@proton.me>
+// SPDX-License-Identifier: MPL-2.0
+package main
+
+type Callback := fun (Command)
+
+struct Command {
+	name string
+	exec Callback
+	required_args i32
+	arg_names []string
+	options []Option
+mut:
+	args []string
+}
+
+struct Option {
+	name string
+mut:
+	found bool
+}
+
+fun (mut cmd Command) parse(args []string) {
+	for i := 0; i < args.length; i += 1 {
+		arg := args[i]
+		if arg.starts_with('--') {
+			// TODO this should require cmd.options to be mutable as well
+			for mut opt in cmd.options {
+				if arg.ends_with(opt.name) {
+					opt.found = true
+					break
+				}
+			}
+		} else {
+			cmd.args.push(arg)
+		}
+	}
+
+	if cmd.required_args > 0 and cmd.required_args > cmd.args.length {
+		eprintln('error: missing required arguments')
+		eprintln(cmd.get_help_text())
+		exit(1)
+	}
+
+	cmd.exec(cmd)
+}
+
+// TODO use string builder
+fun (cmd Command) get_help_text() string {
+	mut h := 'Usage: ${cmd.name}'
+
+	for i := 0; i < cmd.required_args; i += 1 {
+		if i < cmd.arg_names.length {
+			h += ' <${cmd.arg_names[i]}>'
+		} else {
+			h += ' <arg>'
+		}
+	}
+
+	if cmd.options.length > 0 {
+		h += ' [options]'
+	}
+
+	return h
+}
+
+// TODO method is_set is private
+pub fun (options []Option) is_set(name string) bool {
+	for opt in options {
+		if opt.found and opt.name == name {
+			return true
+		}
+	}
+	return false
+}

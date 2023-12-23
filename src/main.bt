@@ -5,23 +5,29 @@ package main
 import os
 
 fun main() {
-	args := os.user_args()
-	if args.length == 0 {
-		eprintln('usage: dts-wrap <file.d.ts> [options]')
-		exit(0)
+	mut app := Command{
+		name = 'dts-wrap'
+		arg_names = ['file.d.ts']
+		exec = fun (cmd Command) {
+			text := os.read_file(cmd.args[0])
+			ast := parse(text)
+
+			if cmd.options.is_set('show-ast') {
+				println(ast)
+				exit(0)
+			}
+
+			out := generate(ast)
+			os.mkdir('out/${ast.name}')
+			os.write_file('out/${ast.name}/${ast.name}.js.bt', out)
+		}
+		required_args = 1
+		options = [
+			Option{
+				name = 'show-ast'
+			}
+		]
 	}
 
-	show_ast := args.contains('--show-ast')
-
-	text := os.read_file(args[0])
-	ast := parse(text)
-
-	if show_ast {
-		println(ast)
-		exit(0)
-	}
-
-	out := generate(ast)
-	os.mkdir('out/${ast.name}')
-	os.write_file('out/${ast.name}/${ast.name}.js.bt', out)
+	app.parse(os.user_args())
 }
