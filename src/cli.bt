@@ -64,8 +64,7 @@ fun (cmd Command) get_help_text() string {
 	return h
 }
 
-// TODO method is_set is private
-pub fun (options []Option) is_set(name string) bool {
+fun (options []Option) is_set(name string) bool {
 	for opt in options {
 		if opt.found and opt.name == name {
 			return true
