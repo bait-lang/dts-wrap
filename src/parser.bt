@@ -60,7 +60,7 @@ fun (mut p Parser) decl() Decl {
 		}
 		else {
 			p.error("unexpected token ${p.tok}, ${p.tokenizer.lit}")
-			exit(1) // TODO remove once @noreturn is implemented
+			exit(1) // FIXME bait: @noreturn for methods
 		}
 	}
 }
@@ -182,7 +182,6 @@ fun (mut p Parser) check(tok TokenKind) {
 		} else {
 			p.error("got ${p.tok}, expected ${tok}")
 		}
-		exit(1) // TODO remove once @noreturn is implemented
 	}
 	p.next()
 }
@@ -198,6 +197,7 @@ fun (mut p Parser) next() {
 	p.lit = p.tokenizer.lit
 }
 
+@noreturn
 fun (p Parser) error(msg string) {
 	l := p.tokenizer.get_line()
 	eprintln('line ${l}: ${msg}')

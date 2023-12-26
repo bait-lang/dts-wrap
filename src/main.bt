@@ -4,24 +4,25 @@ package main
 
 import os
 
+fun wrap_dts_file(cmd Command) {
+	text := os.read_file(cmd.args[0])
+	ast := parse(text)
+
+	if cmd.options.is_set('show-ast') {
+		println(ast)
+		exit(0)
+	}
+
+	out := generate(ast)
+	os.mkdir('out/${ast.name}')
+	os.write_file('out/${ast.name}/${ast.name}.js.bt', out)
+}
+
 fun main() {
 	mut app := Command{
 		name = 'dts-wrap'
-		arg_names = ['file.d.ts']
-		exec = fun (cmd Command) {
-			text := os.read_file(cmd.args[0])
-			ast := parse(text)
-
-			if cmd.options.is_set('show-ast') {
-				println(ast)
-				exit(0)
-			}
-
-			out := generate(ast)
-			os.mkdir('out/${ast.name}')
-			os.write_file('out/${ast.name}/${ast.name}.js.bt', out)
-		}
-		required_args = 1
+		required_args = ['file.d.ts']
+		exec = wrap_dts_file
 		options = [
 			Option{
 				name = 'show-ast'
