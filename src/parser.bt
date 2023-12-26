@@ -42,26 +42,13 @@ fun (mut p Parser) decls() []Decl {
 
 fun (mut p Parser) decl() Decl {
 	p.skip(.key_export)
-	match p.tok {
-		.key_const {
-			return p.const_decl()
-		}
-		.key_function {
-			return p.function_decl()
-		}
-		.key_interface {
-			return p.interface_decl()
-		}
-		.key_module {
-			return p.module_decl()
-		}
-		.key_var {
-			return p.const_decl()
-		}
-		else {
-			p.error("unexpected token ${p.tok}, ${p.tokenizer.lit}")
-			exit(1) // TODO remove once @noreturn is implemented
-		}
+	return match p.tok {
+		.key_const { p.const_decl() }
+		.key_function { p.function_decl() }
+		.key_interface { p.interface_decl() }
+		.key_module { p.module_decl() }
+		.key_var { p.const_decl() }
+		else { p.error("unexpected token ${p.tok}, ${p.tokenizer.lit}") }
 	}
 }
 
@@ -182,7 +169,6 @@ fun (mut p Parser) check(tok TokenKind) {
 		} else {
 			p.error("got ${p.tok}, expected ${tok}")
 		}
-		exit(1) // TODO remove once @noreturn is implemented
 	}
 	p.next()
 }
@@ -198,6 +184,7 @@ fun (mut p Parser) next() {
 	p.lit = p.tokenizer.lit
 }
 
+@noreturn
 fun (p Parser) error(msg string) {
 	l := p.tokenizer.get_line()
 	eprintln('line ${l}: ${msg}')
