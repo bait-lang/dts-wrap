@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
+import strings
+
 type Callback := fun (Command)
 
 struct Command {
@@ -49,23 +51,26 @@ fun (mut cmd Command) parse(args []string) {
 	cmd.exec(cmd)
 }
 
-// FIXME bait: use string builder
 fun (cmd Command) get_help_text() string {
-	mut h := 'Usage: ${cmd.name}'
+	mut help := strings.new_builder(100)
+	help.write('Usage: ')
+	help.write(cmd.name)
 
 	for i := 0; i < cmd.nr_required_args; i += 1 {
 		if i < cmd.required_args.length {
-			h += ' <${cmd.required_args[i]}>'
+			help.write(' <')
+			help.write(cmd.required_args[i])
+			help.write('>')
 		} else {
-			h += ' <arg>'
+			help.write(' <arg>')
 		}
 	}
 
 	if cmd.options.length > 0 {
-		h += ' [options]'
+		help.write(' [options]')
 	}
 
-	return h
+	return help.str()
 }
 
 fun (options []Option) is_set(name string) bool {
