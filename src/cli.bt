@@ -7,10 +7,10 @@ type Callback := fun (Command)
 struct Command {
 	name string
 	exec Callback
-	required_args i32
-	arg_names []string
+	required_args []string
 	options []Option
 mut:
+	nr_required_args i32
 	args []string
 }
 
@@ -21,10 +21,14 @@ mut:
 }
 
 fun (mut cmd Command) parse(args []string) {
+	if cmd.nr_required_args < cmd.required_args.length {
+		cmd.nr_required_args = cmd.required_args.length
+	}
+
 	for i := 0; i < args.length; i += 1 {
 		arg := args[i]
 		if arg.starts_with('--') {
-			// TODO this should require cmd.options to be mutable as well
+			// FIXME bait: this should require cmd.options to be mutable as well
 			for mut opt in cmd.options {
 				if arg.ends_with(opt.name) {
 					opt.found = true
@@ -36,7 +40,7 @@ fun (mut cmd Command) parse(args []string) {
 		}
 	}
 
-	if cmd.required_args > 0 and cmd.required_args > cmd.args.length {
+	if cmd.nr_required_args > cmd.args.length {
 		eprintln('error: missing required arguments')
 		eprintln(cmd.get_help_text())
 		exit(1)
@@ -45,13 +49,13 @@ fun (mut cmd Command) parse(args []string) {
 	cmd.exec(cmd)
 }
 
-// TODO use string builder
+// FIXME bait: use string builder
 fun (cmd Command) get_help_text() string {
 	mut h := 'Usage: ${cmd.name}'
 
-	for i := 0; i < cmd.required_args; i += 1 {
-		if i < cmd.arg_names.length {
-			h += ' <${cmd.arg_names[i]}>'
+	for i := 0; i < cmd.nr_required_args; i += 1 {
+		if i < cmd.required_args.length {
+			h += ' <${cmd.required_args[i]}>'
 		} else {
 			h += ' <arg>'
 		}
