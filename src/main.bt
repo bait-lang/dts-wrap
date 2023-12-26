@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
+import cli
 import os
 
-fun wrap_dts_file(cmd Command) {
+fun wrap_dts_file(cmd cli.Command) {
 	text := os.read_file(cmd.args[0])
 	ast := parse(text)
 
@@ -19,12 +20,12 @@ fun wrap_dts_file(cmd Command) {
 }
 
 fun main() {
-	mut app := Command{
+	mut app := cli.Command{
 		name = 'dts-wrap'
 		required_args = ['file.d.ts']
 		exec = wrap_dts_file
 		options = [
-			Option{
+			cli.Option{
 				name = 'show-ast'
 			}
 		]
