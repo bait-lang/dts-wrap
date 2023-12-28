@@ -48,6 +48,7 @@ fun (mut p Parser) decl() Decl {
 		.key_function { p.function_decl() }
 		.key_interface { p.interface_decl() }
 		.key_module { p.module_decl() }
+		.key_type { p.type_decl() }
 		.key_var { p.const_decl() }
 		else { p.error("unexpected token ${p.tok}, ${p.val}") }
 	}
@@ -131,6 +132,18 @@ fun (mut p Parser) module_decl() Module {
 	return Module{
 		name = name
 		decls = decls
+	}
+}
+
+fun (mut p Parser) type_decl() TypeDecl {
+	p.next()
+	name := p.check_name()
+	p.check(.assign)
+	typ := p.parse_type()
+	p.check(.semi)
+	return TypeDecl{
+		name = name
+		typ = typ
 	}
 }
 

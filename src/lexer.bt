@@ -51,6 +51,7 @@ fun (mut l Lexer) next() Token {
 		`]` { .rsqr }
 		`{` { .lcur }
 		`}` { .rcur }
+		`=` { .assign }
 		`:` { .colon }
 		`,` { .comma }
 		`|` { .pipe }

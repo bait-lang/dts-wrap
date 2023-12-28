@@ -13,6 +13,7 @@ enum Token {
 	rsqr
 	lcur
 	rcur
+	assign
 	colon
 	comma
 	semi
@@ -26,6 +27,7 @@ enum Token {
 	key_interface
 	key_module
 	key_readonly
+	key_type
 	key_var
 }
 
@@ -38,6 +40,7 @@ fun tok_from_string(name string) Token {
 		'interface' { .key_interface }
 		'module' { .key_module }
 		'readonly' { .key_readonly }
+		'type' { .key_type }
 		'var' { .key_var }
 		else { .name }
 	}

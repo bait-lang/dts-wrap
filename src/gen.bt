@@ -32,26 +32,30 @@ fun (mut g Gen) decls(decls []Decl) {
 
 fun (mut g Gen) decl(decl Decl) {
 	match decl {
-		Const {
-			g.const_decl(decl)
-		}
-		Function {
-			g.function_decl(decl)
-		}
-		Interface {
-			g.interface_decl(decl)
-		}
-		Module {
-			g.module_decl(decl)
-		}
-		else {
-			panic('cannot gen ${decl}')
-		}
+		Const { g.const_decl(decl) }
+		Function { g.function_decl(decl) }
+		Interface { g.interface_decl(decl) }
+		Module { g.module_decl(decl) }
+		TypeDecl { g.type_decl(decl) }
+		else { panic('cannot gen ${decl}') }
 	}
 }
 
 fun (mut g Gen) const_decl(decl Const) {
 	g.writeln('pub const ${g.mod_name}.${decl.name} := ${decl.typ.name()}\n')
+}
+
+fun (mut g Gen) fields(fields []Field) {
+	for field in fields {
+		g.field(field)
+	}
+}
+
+fun (mut g Gen) field(field Field) {
+	g.write('\t')
+	g.write(field.name)
+	g.write(' ')
+	g.writeln(field.typ.name())
 }
 
 fun (mut g Gen) function_decl(decl Function) {
@@ -87,23 +91,14 @@ fun (mut g Gen) interface_decl(decl Interface) {
 	g.writeln('}\n')
 }
 
-fun (mut g Gen) fields(fields []Field) {
-	for field in fields {
-		g.field(field)
-	}
-}
-
-fun (mut g Gen) field(field Field) {
-	g.write('\t')
-	g.write(field.name)
-	g.write(' ')
-	g.writeln(field.typ.name())
-}
-
 fun (mut g Gen) module_decl(mod Module) {
 	g.mod_name = '#JS.' + mod.name
 	g.decls(mod.decls)
 	g.mod_name = '#JS'
+}
+
+fun (mut g Gen) type_decl(decl TypeDecl) {
+	g.writeln('pub type ${g.mod_name}.${decl.name} := ${decl.typ.name()}\n')
 }
 
 fun (mut g Gen) write (s string){
