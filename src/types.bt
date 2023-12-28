@@ -7,6 +7,7 @@ type Type := Primitive | ArrayType | SumType
 enum PrimitiveKind {
 	unknown
 	any
+	void
 	bool
 	number
 	string
@@ -36,6 +37,7 @@ fun (t Type) name() string {
 fun (t Primitive) name() string {
 	return match t.kind {
 		.any { '#JS.Any' }
+		.void { '' }
 		.bool { '#JS.Boolean' }
 		.number { '#JS.Number' }
 		.string { '#JS.String' }

@@ -69,6 +69,10 @@ fun (mut p Parser) const_decl() Const {
 fun (mut p Parser) field() Field {
 	name := p.check_name()
 	p.skip(.question) // TODO handle optional fields
+	return p.field_from_name(name)
+}
+
+fun (mut p Parser) field_from_name(name string) Field {
 	p.check(.colon)
 	typ := p.parse_type()
 	return Field{
@@ -80,6 +84,10 @@ fun (mut p Parser) field() Field {
 fun (mut p Parser) function_decl() Function {
 	p.skip(.key_function)
 	name := p.check_name()
+	return p.function_from_name(name)
+}
+
+fun (mut p Parser) function_from_name(name string) Function {
 	p.check(.lpar)
 	mut params := []Field
 	for p.tok != .rpar {
@@ -106,11 +114,16 @@ fun (mut p Parser) interface_decl() Interface {
 	mut fields := []Field
 	mut methods := []Function
 	for p.tok != .rcur {
-		if p.peek() == .lpar {
-			methods.push(p.function_decl())
+		// TODO handle modifiers
+		// TODO can methods be readonly?
+		p.skip(.key_readonly)
+		fname := p.check_name()
+		p.skip(.question) // TODO handle optional fields and methods
+
+		if p.tok == .lpar {
+			methods.push(p.function_from_name(fname))
 		} else {
-			p.skip(.key_readonly) // TODO properly handle modifiers
-			fields.push(p.field())
+			fields.push(p.field_from_name(fname))
 			p.check(.semi)
 		}
 	}
@@ -178,6 +191,7 @@ fun (mut p Parser) type_from_name(name string) Primitive {
 	mut kind := PrimitiveKind.unknown
 	match name {
 		'any' { kind = .any }
+		'void' { kind = .void }
 		'boolean' { kind = .bool }
 		'number' { kind = .number }
 		'string' { kind = .string }
