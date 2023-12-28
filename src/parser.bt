@@ -10,14 +10,15 @@ fun parse(text string) File {
 
 struct Parser {
 mut:
-	tokenizer Tokenizer
-	tok TokenKind
-	lit string
+	lexer Lexer
+	tok Token
+	next_tok Token
+	val string
 }
 
 fun (mut p Parser) init(text string) {
-	p.tokenizer = Tokenizer{}
-	p.tokenizer.init(text)
+	p.lexer = Lexer{}
+	p.lexer.init(text)
 }
 
 fun (mut p Parser) parse() File {
@@ -47,8 +48,9 @@ fun (mut p Parser) decl() Decl {
 		.key_function { p.function_decl() }
 		.key_interface { p.interface_decl() }
 		.key_module { p.module_decl() }
+		.key_type { p.type_decl() }
 		.key_var { p.const_decl() }
-		else { p.error("unexpected token ${p.tok}, ${p.tokenizer.lit}") }
+		else { p.error("unexpected token ${p.tok}, ${p.val}") }
 	}
 }
 
@@ -67,6 +69,10 @@ fun (mut p Parser) const_decl() Const {
 fun (mut p Parser) field() Field {
 	name := p.check_name()
 	p.skip(.question) // TODO handle optional fields
+	return p.field_from_name(name)
+}
+
+fun (mut p Parser) field_from_name(name string) Field {
 	p.check(.colon)
 	typ := p.parse_type()
 	return Field{
@@ -76,8 +82,12 @@ fun (mut p Parser) field() Field {
 }
 
 fun (mut p Parser) function_decl() Function {
-	p.next()
+	p.skip(.key_function)
 	name := p.check_name()
+	return p.function_from_name(name)
+}
+
+fun (mut p Parser) function_from_name(name string) Function {
 	p.check(.lpar)
 	mut params := []Field
 	for p.tok != .rpar {
@@ -102,22 +112,32 @@ fun (mut p Parser) interface_decl() Interface {
 	name := p.check_name()
 	p.check(.lcur)
 	mut fields := []Field
+	mut methods := []Function
 	for p.tok != .rcur {
-		p.skip(.key_readonly) // TODO properly handle modifiers
-		fields.push(p.field())
-		p.check(.semi)
-		// TODO methods
+		// TODO handle modifiers
+		// TODO can methods be readonly?
+		p.skip(.key_readonly)
+		fname := p.check_name()
+		p.skip(.question) // TODO handle optional fields and methods
+
+		if p.tok == .lpar {
+			methods.push(p.function_from_name(fname))
+		} else {
+			fields.push(p.field_from_name(fname))
+			p.check(.semi)
+		}
 	}
 	p.check(.rcur)
 	return Interface{
 		name = name
 		fields = fields
+		methods = methods
 	}
 }
 
 fun (mut p Parser) module_decl() Module {
 	p.check(.key_module)
-	name := p.lit
+	name := p.val
 	p.check(.string)
 	p.check(.lcur)
 	decls := p.decls()
@@ -125,6 +145,18 @@ fun (mut p Parser) module_decl() Module {
 	return Module{
 		name = name
 		decls = decls
+	}
+}
+
+fun (mut p Parser) type_decl() TypeDecl {
+	p.next()
+	name := p.check_name()
+	p.check(.assign)
+	typ := p.parse_type()
+	p.check(.semi)
+	return TypeDecl{
+		name = name
+		typ = typ
 	}
 }
 
@@ -139,16 +171,31 @@ fun (mut p Parser) parse_type() Type {
 		}
 	}
 
-	return p.type_from_name(name)
+	typ := p.type_from_name(name)
+
+	if p.tok != .pipe {
+		return typ
+	}
+
+	mut variants := [typ as Type]
+	for p.tok == .pipe {
+		p.next()
+		variants.push(p.parse_type())
+	}
+	return SumType {
+		variants = variants
+	}
 }
 
 fun (mut p Parser) type_from_name(name string) Primitive {
 	mut kind := PrimitiveKind.unknown
 	match name {
 		'any' { kind = .any }
+		'void' { kind = .void }
 		'boolean' { kind = .bool }
 		'number' { kind = .number }
-		"string" { kind = .string }
+		'string' { kind = .string }
+		'symbol' { kind = .symbol }
 		else { panic('unknown type ${name}') }
 	}
 	return Primitive {
@@ -156,16 +203,16 @@ fun (mut p Parser) type_from_name(name string) Primitive {
 	}
 }
 
-fun (mut p Parser) skip(tok TokenKind) {
+fun (mut p Parser) skip(tok Token) {
 	if p.tok == tok {
 		p.next()
 	}
 }
 
-fun (mut p Parser) check(tok TokenKind) {
+fun (mut p Parser) check(tok Token) {
 	if p.tok != tok {
 		if p.tok == .unknown or p.tok == .name {
-			p.error("got ${p.tok} (${p.tokenizer.lit}), expected ${tok}")
+			p.error("got ${p.tok} (${p.val}), expected ${tok}")
 		} else {
 			p.error("got ${p.tok}, expected ${tok}")
 		}
@@ -174,19 +221,31 @@ fun (mut p Parser) check(tok TokenKind) {
 }
 
 fun (mut p Parser) check_name() string {
-	name := p.lit
+	name := p.val
 	p.check(.name)
 	return name
 }
 
 fun (mut p Parser) next() {
-	p.tok = p.tokenizer.next()
-	p.lit = p.tokenizer.lit
+	if p.next_tok == .unknown {
+		p.tok = p.lexer.next()
+	} else {
+		p.tok = p.next_tok
+		p.next_tok = .unknown
+	}
+	p.val = p.lexer.val
+}
+
+fun (mut p Parser) peek() Token {
+	if p.next_tok == .unknown {
+		p.next_tok = p.lexer.next()
+	}
+	return p.next_tok
 }
 
 @noreturn
 fun (p Parser) error(msg string) {
-	l := p.tokenizer.get_line()
+	l := p.lexer.get_line()
 	eprintln('line ${l}: ${msg}')
 	exit(1)
 }

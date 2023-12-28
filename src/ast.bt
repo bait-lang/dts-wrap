@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-type Decl := Const | Function | Interface | Module | EmptyDecl
+type Decl := Const | Function | Interface | Module | TypeDecl
 
 struct File {
 	name string
@@ -10,6 +10,11 @@ struct File {
 }
 
 struct Const {
+	name string
+	typ Type
+}
+
+struct Field {
 	name string
 	typ Type
 }
@@ -26,14 +31,12 @@ struct Interface {
 	methods []Function
 }
 
-struct Field {
-	name string
-	typ Type
-}
-
 struct Module {
 	name string
 	decls []Decl
 }
 
-struct EmptyDecl{}
+struct TypeDecl {
+	name string
+	typ Type
+}
