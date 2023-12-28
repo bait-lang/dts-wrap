@@ -1,0 +1,131 @@
+// SPDX-FileCopyrightText: 2023-present Lukas Neubert <lukas.neubert@proton.me>
+// SPDX-License-Identifier: MPL-2.0
+package main
+
+struct Lexer {
+mut:
+	text string
+	line_offsets []i32
+	pos i32
+	start i32
+	val string
+}
+
+fun (mut l Lexer) init(text string) {
+	l.text = text
+	l.line_offsets = [0]
+}
+
+fun (l Lexer) get_line() i32 {
+	return l.line_offsets.length
+}
+
+fun (mut l Lexer) next() Token {
+	l.skip_whitespace()
+	if l.pos >= l.text.length {
+		return .eof
+	}
+
+	c := l.text[l.pos]
+	l.pos += 1
+
+	if c == `/` {
+		c2 := l.text[l.pos]
+		if c2 == `/` {
+			l.skip_line()
+			return l.next()
+		}
+		if c2 == `*` {
+			l.skip_block()
+			return l.next()
+		}
+	} else if is_name_char(c) {
+		return l.name_or_key()
+	}
+
+	return match c {
+		`'` { l.string_literal() }
+		`(` { .lpar }
+		`)` { .rpar}
+		`[` { .lsqr }
+		`]` { .rsqr }
+		`{` { .lcur }
+		`}` { .rcur }
+		`:` { .colon }
+		`,` { .comma }
+		`|` { .pipe }
+		`;` { .semi }
+		`?` { .question }
+		else { l.unknown() }
+	}
+}
+
+fun (mut l Lexer) name_or_key() Token {
+	l.start = l.pos - 1
+	for l.pos < l.text.length {
+		if is_name_char(l.text[l.pos]) {
+			l.pos += 1
+		} else {
+			break
+		}
+	}
+	l.val = l.text.substr(l.start, l.pos)
+	kind := tok_from_string(l.val)
+	return kind
+}
+
+fun (mut l Lexer) string_literal() Token {
+	l.start = l.pos
+	for l.pos < l.text.length and l.text[l.pos] != `'` {
+		l.pos += 1
+	}
+	l.val = l.text.substr(l.start, l.pos)
+	l.pos += 1
+	return .string
+}
+
+fun (mut l Lexer) skip_line() {
+	for l.pos < l.text.length and l.text[l.pos] != `\n` {
+		l.pos += 1
+	}
+	l.pos += 1
+	l.line_offsets.push(l.pos)
+}
+
+fun (mut l Lexer) skip_block() {
+	for l.pos < l.text.length {
+		c := l.text[l.pos]
+		if c == `\n` {
+			l.pos += 1
+			l.line_offsets.push(l.pos)
+		} else if c == `*` and l.text[l.pos + 1] == `/` {
+			l.pos += 2
+			break
+		} else {
+			l.pos += 1
+		}
+	}
+}
+
+fun (mut l Lexer) skip_whitespace() {
+	for l.pos < l.text.length {
+		c := l.text[l.pos]
+		if c == `\n` {
+			l.pos += 1
+			l.line_offsets.push(l.pos)
+		} else if c == ` ` or c == `\l` {
+			l.pos += 1
+		} else {
+			break
+		}
+	}
+}
+
+fun (mut l Lexer) unknown() Token {
+	l.val = l.text[l.pos - 1].ascii()
+	return .unknown
+}
+
+fun is_name_char(c u8) bool {
+	return (c >= `a` and c <= `z`) or (c >= `A` and c <= `Z`)
+}

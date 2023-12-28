@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-enum TokenKind {
+enum Token {
 	unknown
 	eof
 	comment
@@ -29,7 +29,7 @@ enum TokenKind {
 	key_var
 }
 
-fun tok_from_string(name string) TokenKind {
+fun tok_from_string(name string) Token {
 	return match name {
 		'const' { .key_const }
 		'declare' { .key_declare }
