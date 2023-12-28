@@ -10,6 +10,7 @@ enum PrimitiveKind {
 	bool
 	number
 	string
+	symbol
 }
 
 struct Primitive {
@@ -38,6 +39,7 @@ fun (t Primitive) name() string {
 		.bool { '#JS.Boolean' }
 		.number { '#JS.Number' }
 		.string { '#JS.String' }
+		.symbol { '#JS.Any' }
 		else { '' }
 	}
 }

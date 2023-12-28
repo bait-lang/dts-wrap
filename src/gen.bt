@@ -56,22 +56,34 @@ fun (mut g Gen) const_decl(decl Const) {
 
 fun (mut g Gen) function_decl(decl Function) {
 	g.write('pub fun ${g.mod_name}.${decl.name}(')
-	for i, param in decl.params {
+	g.params(decl.params)
+	g.write(') ')
+	g.writeln(decl.return_type.name())
+}
+
+fun (mut g Gen) params(params []Field) {
+	for i, param in params {
 		g.write(param.name)
 		g.write(' ')
 		g.write(param.typ.name())
-		if i < decl.params.length - 1 {
+		if i < params.length - 1 {
 			g.write(', ')
 		}
 	}
-	g.write(') ')
-	g.writeln(decl.return_type.name())
 }
 
 fun (mut g Gen) interface_decl(decl Interface) {
 	g.writeln('pub interface ${g.mod_name}.${decl.name}{')
 	g.out += 'global:\n'
 	g.fields(decl.fields)
+	for method in decl.methods {
+		g.write('\t')
+		g.write(method.name)
+		g.write('(')
+		g.params(method.params)
+		g.write(') ')
+		g.writeln(method.return_type.name())
+	}
 	g.writeln('}\n')
 }
 

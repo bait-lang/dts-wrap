@@ -77,7 +77,7 @@ fun (mut p Parser) field() Field {
 }
 
 fun (mut p Parser) function_decl() Function {
-	p.next()
+	p.skip(.key_function)
 	name := p.check_name()
 	p.check(.lpar)
 	mut params := []Field
@@ -103,16 +103,21 @@ fun (mut p Parser) interface_decl() Interface {
 	name := p.check_name()
 	p.check(.lcur)
 	mut fields := []Field
+	mut methods := []Function
 	for p.tok != .rcur {
-		p.skip(.key_readonly) // TODO properly handle modifiers
-		fields.push(p.field())
-		p.check(.semi)
-		// TODO methods
+		if p.peek() == .lpar {
+			methods.push(p.function_decl())
+		} else {
+			p.skip(.key_readonly) // TODO properly handle modifiers
+			fields.push(p.field())
+			p.check(.semi)
+		}
 	}
 	p.check(.rcur)
 	return Interface{
 		name = name
 		fields = fields
+		methods = methods
 	}
 }
 
@@ -162,7 +167,8 @@ fun (mut p Parser) type_from_name(name string) Primitive {
 		'any' { kind = .any }
 		'boolean' { kind = .bool }
 		'number' { kind = .number }
-		"string" { kind = .string }
+		'string' { kind = .string }
+		'symbol' { kind = .symbol }
 		else { panic('unknown type ${name}') }
 	}
 	return Primitive {
@@ -194,8 +200,20 @@ fun (mut p Parser) check_name() string {
 }
 
 fun (mut p Parser) next() {
-	p.tok = p.lexer.next()
+	if p.next_tok == .unknown {
+		p.tok = p.lexer.next()
+	} else {
+		p.tok = p.next_tok
+		p.next_tok = .unknown
+	}
 	p.val = p.lexer.val
+}
+
+fun (mut p Parser) peek() Token {
+	if p.next_tok == .unknown {
+		p.next_tok = p.lexer.next()
+	}
+	return p.next_tok
 }
 
 @noreturn
