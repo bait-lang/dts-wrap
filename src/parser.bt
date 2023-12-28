@@ -139,7 +139,20 @@ fun (mut p Parser) parse_type() Type {
 		}
 	}
 
-	return p.type_from_name(name)
+	typ := p.type_from_name(name)
+
+	if p.tok != .pipe {
+		return typ
+	}
+
+	mut variants := [typ as Type]
+	for p.tok == .pipe {
+		p.next()
+		variants.push(p.parse_type())
+	}
+	return SumType {
+		variants = variants
+	}
 }
 
 fun (mut p Parser) type_from_name(name string) Primitive {

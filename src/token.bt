@@ -16,6 +16,7 @@ enum TokenKind {
 	colon
 	comma
 	semi
+	pipe
 	question
 	name
 	key_const
