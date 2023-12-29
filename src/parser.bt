@@ -181,11 +181,11 @@ fun (mut p Parser) parse_type() Type {
 		p.next()
 		p.check(.rsqr)
 		return ArrayType {
-			elem = p.type_from_name(name)
+			elem = type_from_string(name)
 		}
 	}
 
-	typ := p.type_from_name(name)
+	typ := type_from_string(name)
 
 	if p.tok != .pipe {
 		return typ
@@ -198,22 +198,6 @@ fun (mut p Parser) parse_type() Type {
 	}
 	return SumType {
 		variants = variants
-	}
-}
-
-fun (mut p Parser) type_from_name(name string) Primitive {
-	mut kind := PrimitiveKind.unknown
-	match name {
-		'any' { kind = .any }
-		'void' { kind = .void }
-		'boolean' { kind = .bool }
-		'number' { kind = .number }
-		'string' { kind = .string }
-		'symbol' { kind = .symbol }
-		else { panic('unknown type ${name}') }
-	}
-	return Primitive {
-		kind = kind
 	}
 }
 

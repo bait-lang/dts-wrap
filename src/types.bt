@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-type Type := Primitive | ArrayType | SumType
+type Type := Primitive | ArrayType | NamedType | SumType
 
 enum PrimitiveKind {
 	unknown
@@ -22,6 +22,10 @@ struct ArrayType {
 	elem Type
 }
 
+struct NamedType {
+	name string
+}
+
 struct SumType {
 	variants []Type
 }
@@ -30,6 +34,7 @@ fun (t Type) name() string {
 	return match t {
 		Primitive { t.name() }
 		ArrayType { '#JS.Array' }
+		NamedType { t.name }
 		SumType { '#JS.Any' } // TODO proper sum types
 	}
 }
@@ -43,5 +48,28 @@ fun (t Primitive) name() string {
 		.string { '#JS.String' }
 		.symbol { '#JS.Any' }
 		else { '' }
+	}
+}
+
+
+fun type_from_string(s string) Type {
+	kind := match s {
+		'any' { PrimitiveKind.any }
+		'void' { .void }
+		'boolean' { .bool }
+		'number' { .number }
+		'string' { .string }
+		'symbol' { .symbol }
+		else { .unknown }
+	}
+
+	if kind != .unknown {
+		return Primitive {
+			kind = kind
+		}
+	}
+
+	return NamedType{
+		name = '#JS.' + s
 	}
 }
