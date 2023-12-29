@@ -114,8 +114,8 @@ fun (mut p Parser) interface_decl() Interface {
 	mut fields := []Field
 	mut methods := []Function
 	for p.tok != .rcur {
-		// Index signature `[key: type]: type`
-		// Just parse this for now. TODO how to represent in Bait?
+		// Index signature
+		// Currently only parsed. TODO how to represent in Bait?
 		if p.tok == .lsqr {
 			p.next()
 			key_name := p.check_name()
@@ -125,6 +125,13 @@ fun (mut p Parser) interface_decl() Interface {
 			p.check(.colon)
 			val_type := p.parse_type()
 			p.check(.semi)
+			continue
+		}
+
+		// Call signature
+		// Currently only parsed. TODO how to represent in Bait?
+		if p.tok == .lpar {
+			signature := p.function_from_name('')
 			continue
 		}
 
