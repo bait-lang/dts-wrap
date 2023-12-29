@@ -128,6 +128,14 @@ fun (mut p Parser) interface_decl() Interface {
 			continue
 		}
 
+		// Constructor signature
+		// Currently only parsed. TODO how to represent in Bait?
+		if p.tok == .key_new {
+			p.next()
+			signature := p.function_from_name('')
+			continue
+		}
+
 		// Call signature
 		// Currently only parsed. TODO how to represent in Bait?
 		if p.tok == .lpar {

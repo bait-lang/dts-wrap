@@ -26,6 +26,7 @@ enum Token {
 	key_function
 	key_interface
 	key_module
+	key_new
 	key_readonly
 	key_type
 	key_var
@@ -39,6 +40,7 @@ fun tok_from_string(name string) Token {
 		'function' { .key_function }
 		'interface' { .key_interface }
 		'module' { .key_module }
+		'new' { .key_new }
 		'readonly' { .key_readonly }
 		'type' { .key_type }
 		'var' { .key_var }
