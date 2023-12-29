@@ -114,6 +114,20 @@ fun (mut p Parser) interface_decl() Interface {
 	mut fields := []Field
 	mut methods := []Function
 	for p.tok != .rcur {
+		// Index signature `[key: type]: type`
+		// Just parse this for now. TODO how to represent in Bait?
+		if p.tok == .lsqr {
+			p.next()
+			key_name := p.check_name()
+			p.check(.colon)
+			key_type := p.parse_type()
+			p.check(.rsqr)
+			p.check(.colon)
+			val_type := p.parse_type()
+			p.check(.semi)
+			continue
+		}
+
 		// TODO handle modifiers
 		// TODO can methods be readonly?
 		p.skip(.key_readonly)
