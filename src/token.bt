@@ -19,6 +19,7 @@ enum Token {
 	semi
 	pipe
 	question
+	amp
 	name
 	key_const
 	key_declare

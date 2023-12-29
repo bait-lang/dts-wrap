@@ -192,6 +192,7 @@ fun (mut p Parser) type_decl() TypeDecl {
 fun (mut p Parser) parse_type() Type {
 	name := p.check_name()
 
+	// Array
 	if p.tok == .lsqr {
 		p.next()
 		p.check(.rsqr)
@@ -202,10 +203,21 @@ fun (mut p Parser) parse_type() Type {
 
 	typ := type_from_string(name)
 
+	if p.tok == .amp {
+		p.next()
+		typ_b := p.parse_type()
+		return Intersection{
+			a = typ
+			b = typ_b
+		}
+	}
+
+	// Simple type
 	if p.tok != .pipe {
 		return typ
 	}
 
+	// Sumtype
 	mut variants := [typ as Type]
 	for p.tok == .pipe {
 		p.next()
