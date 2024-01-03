@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 package main
 
-type Type := Primitive | ArrayType | Intersection | NamedType | SumType
+type Type := Primitive | ArrayType | Generic | Intersection | NamedType | SumType
 
 enum PrimitiveKind {
 	unknown
@@ -22,6 +22,11 @@ struct ArrayType {
 	elem Type
 }
 
+struct Generic {
+	typ Type
+	concrete Type
+}
+
 struct Intersection {
 	a Type
 	b Type
@@ -39,6 +44,7 @@ fun (t Type) name() string {
 	return match t {
 		Primitive { t.name() }
 		ArrayType { '#JS.Array' }
+		Generic { '#JS.Any' } // TODO proper generics
 		Intersection { '#JS.Any' } // TODO how to represent in Bait?
 		NamedType { t.name }
 		SumType { '#JS.Any' } // TODO bait: inline sum types

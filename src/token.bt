@@ -20,6 +20,8 @@ enum Token {
 	pipe
 	question
 	amp
+	lt
+	gt
 	name
 	key_const
 	key_declare

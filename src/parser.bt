@@ -192,7 +192,7 @@ fun (mut p Parser) type_decl() TypeDecl {
 fun (mut p Parser) parse_type() Type {
 	name := p.check_name()
 
-	// Array
+	// Array type
 	if p.tok == .lsqr {
 		p.next()
 		p.check(.rsqr)
@@ -203,12 +203,24 @@ fun (mut p Parser) parse_type() Type {
 
 	typ := type_from_string(name)
 
+	// Intersection type
 	if p.tok == .amp {
 		p.next()
 		typ_b := p.parse_type()
 		return Intersection{
 			a = typ
 			b = typ_b
+		}
+	}
+
+	// Generics
+	if p.tok == .lt {
+		p.next()
+		gtyp := p.parse_type()
+		p.check(.gt)
+		return Generic{
+			typ = typ
+			concrete = gtyp
 		}
 	}
 
