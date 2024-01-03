@@ -21,6 +21,7 @@ struct Field {
 
 struct Function {
 	name string
+	generic_types []Type
 	params []Field
 	return_type Type
 }

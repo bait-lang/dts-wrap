@@ -88,6 +88,14 @@ fun (mut p Parser) function_decl() Function {
 }
 
 fun (mut p Parser) function_from_name(name string) Function {
+	// Generic function
+	mut generic_types := []Type
+	if p.tok == .lt {
+		p.next()
+		generic_types.push(p.parse_type())
+		p.check(.gt)
+	}
+
 	p.check(.lpar)
 	mut params := []Field
 	for p.tok != .rpar {
@@ -102,6 +110,7 @@ fun (mut p Parser) function_from_name(name string) Function {
 	p.check(.semi)
 	return Function{
 		name = name
+		generic_types = generic_types
 		params = params
 		return_type = typ
 	}
@@ -149,14 +158,17 @@ fun (mut p Parser) interface_decl() Interface {
 		fname := p.check_name()
 		p.skip(.question) // TODO handle optional fields and methods
 
-		if p.tok == .lpar {
+		// Methods
+		if p.tok == .lpar or p.tok == .lt {
 			methods.push(p.function_from_name(fname))
-		} else {
-			fields.push(p.field_from_name(fname))
-			p.check(.semi)
+			continue
 		}
+
+		fields.push(p.field_from_name(fname))
+		p.check(.semi)
 	}
 	p.check(.rcur)
+
 	return Interface{
 		name = name
 		fields = fields

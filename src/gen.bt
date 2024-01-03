@@ -82,7 +82,10 @@ fun (mut g Gen) interface_decl(decl Interface) {
 	if decl.fields.length > 0 {
 		g.out += 'global:\n'
 	}
+
 	g.fields(decl.fields)
+
+	// TODO gen generic methods
 	for method in decl.methods {
 		g.write('\t')
 		g.write(method.name)
@@ -91,6 +94,7 @@ fun (mut g Gen) interface_decl(decl Interface) {
 		g.write(') ') // TODO fix extra space for void type
 		g.writeln(method.return_type.name())
 	}
+
 	g.writeln('}\n')
 }
 
