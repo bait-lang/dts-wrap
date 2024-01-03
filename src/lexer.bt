@@ -57,6 +57,9 @@ fun (mut l Lexer) next() Token {
 		`|` { .pipe }
 		`;` { .semi }
 		`?` { .question }
+		`&` { .amp }
+		`<` { .lt }
+		`>` { .gt }
 		else { l.unknown() }
 	}
 }

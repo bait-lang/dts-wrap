@@ -88,6 +88,14 @@ fun (mut p Parser) function_decl() Function {
 }
 
 fun (mut p Parser) function_from_name(name string) Function {
+	// Generic function
+	mut generic_types := []Type
+	if p.tok == .lt {
+		p.next()
+		generic_types.push(p.parse_type())
+		p.check(.gt)
+	}
+
 	p.check(.lpar)
 	mut params := []Field
 	for p.tok != .rpar {
@@ -102,6 +110,7 @@ fun (mut p Parser) function_from_name(name string) Function {
 	p.check(.semi)
 	return Function{
 		name = name
+		generic_types = generic_types
 		params = params
 		return_type = typ
 	}
@@ -114,20 +123,52 @@ fun (mut p Parser) interface_decl() Interface {
 	mut fields := []Field
 	mut methods := []Function
 	for p.tok != .rcur {
+		// Index signature
+		// Currently only parsed. TODO how to represent in Bait?
+		if p.tok == .lsqr {
+			p.next()
+			key_name := p.check_name()
+			p.check(.colon)
+			key_type := p.parse_type()
+			p.check(.rsqr)
+			p.check(.colon)
+			val_type := p.parse_type()
+			p.check(.semi)
+			continue
+		}
+
+		// Constructor signature
+		// Currently only parsed. TODO how to represent in Bait?
+		if p.tok == .key_new {
+			p.next()
+			signature := p.function_from_name('')
+			continue
+		}
+
+		// Call signature
+		// Currently only parsed. TODO how to represent in Bait?
+		if p.tok == .lpar {
+			signature := p.function_from_name('')
+			continue
+		}
+
 		// TODO handle modifiers
 		// TODO can methods be readonly?
 		p.skip(.key_readonly)
 		fname := p.check_name()
 		p.skip(.question) // TODO handle optional fields and methods
 
-		if p.tok == .lpar {
+		// Methods
+		if p.tok == .lpar or p.tok == .lt {
 			methods.push(p.function_from_name(fname))
-		} else {
-			fields.push(p.field_from_name(fname))
-			p.check(.semi)
+			continue
 		}
+
+		fields.push(p.field_from_name(fname))
+		p.check(.semi)
 	}
 	p.check(.rcur)
+
 	return Interface{
 		name = name
 		fields = fields
@@ -163,20 +204,44 @@ fun (mut p Parser) type_decl() TypeDecl {
 fun (mut p Parser) parse_type() Type {
 	name := p.check_name()
 
+	// Array type
 	if p.tok == .lsqr {
 		p.next()
 		p.check(.rsqr)
 		return ArrayType {
-			elem = p.type_from_name(name)
+			elem = type_from_string(name)
 		}
 	}
 
-	typ := p.type_from_name(name)
+	typ := type_from_string(name)
 
+	// Intersection type
+	if p.tok == .amp {
+		p.next()
+		typ_b := p.parse_type()
+		return Intersection{
+			a = typ
+			b = typ_b
+		}
+	}
+
+	// Generics
+	if p.tok == .lt {
+		p.next()
+		gtyp := p.parse_type()
+		p.check(.gt)
+		return Generic{
+			typ = typ
+			concrete = gtyp
+		}
+	}
+
+	// Simple type
 	if p.tok != .pipe {
 		return typ
 	}
 
+	// Sumtype
 	mut variants := [typ as Type]
 	for p.tok == .pipe {
 		p.next()
@@ -184,22 +249,6 @@ fun (mut p Parser) parse_type() Type {
 	}
 	return SumType {
 		variants = variants
-	}
-}
-
-fun (mut p Parser) type_from_name(name string) Primitive {
-	mut kind := PrimitiveKind.unknown
-	match name {
-		'any' { kind = .any }
-		'void' { kind = .void }
-		'boolean' { kind = .bool }
-		'number' { kind = .number }
-		'string' { kind = .string }
-		'symbol' { kind = .symbol }
-		else { panic('unknown type ${name}') }
-	}
-	return Primitive {
-		kind = kind
 	}
 }
 
