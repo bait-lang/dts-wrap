@@ -14,6 +14,7 @@ mut:
 	tok Token
 	next_tok Token
 	val string
+	mod_name string := 'builtin'
 }
 
 fun (mut p Parser) init(text string) {
@@ -27,7 +28,7 @@ fun (mut p Parser) parse() File {
 	decls := p.decls()
 
 	return File{
-		name = 'builtin'
+		name = p.mod_name
 		decls = decls
 	}
 }
@@ -180,9 +181,12 @@ fun (mut p Parser) module_decl() Module {
 	p.check(.key_module)
 	name := p.val
 	p.check(.string)
+	p.mod_name = name
+
 	p.check(.lcur)
 	decls := p.decls()
 	p.check(.rcur)
+
 	return Module{
 		name = name
 		decls = decls
