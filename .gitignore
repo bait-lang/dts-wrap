@@ -1,3 +1,4 @@
 out/
 res/
 *.js
+*.code-workspace
